@@ -4,10 +4,10 @@ In development.
 
 ##Not only the subset, but also more
 
-This package is a simplified implementation of Tracer v1.6 \url{http://beast.bio.ed.ac.uk/tracer} in R.  
+This package is a simplified implementation of [Tracer v1.6](http://beast.bio.ed.ac.uk/tracer) in R.  
 
-It can take MCMC log files from BEAST 1 \url{http://beast.bio.ed.ac.uk},
-BEAST 2 \url{http://www.beast2.org}, or MrBayes \url{http://beast.bio.ed.ac.uk}.
+It can take MCMC log files from [BEAST 1](http://beast.bio.ed.ac.uk),
+[BEAST 2](http://www.beast2.org), or [MrBayes](http://beast.bio.ed.ac.uk).
 
 This package is not only the subset of Tracer v1.6, 
 but also aims to provide more visualizations to understand the Bayesian MCMC result, 
@@ -24,6 +24,12 @@ You can use the **devtools** *install\_github()* function to install the lastest
 library("devtools")
 devtools::install_github("walterxie/TraceR")
 library("TraceR")
+```
+
+This package depends on [ComMA](https://github.com/walterxie/ComMA) package , which also needs to be installed:
+```R
+devtools::install_github("walterxie/ComMA")
+library("ComMA")
 ```
 
 To see all exported functions:
