@@ -30,7 +30,7 @@
 #'
 #' @rdname Tracer
 readMCMCLog <- function(file, rm.na.col=TRUE, ...) {
-  require(ComMA)
+  suppressMessages(require(ComMA))
   mcmc.log <- ComMA::readFile(file, comment.char = "#", msg.file="MCMC log",
                               msg.col="parameters", msg.row="samples", ...)
 

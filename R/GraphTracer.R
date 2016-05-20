@@ -83,7 +83,7 @@ gtTraces <- function(mcmc.log, burn.in, trace.id=c("posterior"), drop.1st.row=TR
       y.lab = trace.id
   }
 
-  require(ComMA)
+  suppressMessages(require(ComMA))
   gg.plot <- ComMA::ggLineWithPoints(melt.df, x.id="state", y.id="value", group.id=group.id,
                                 colour.id=colour.id, point.size=point.size, point.alpha=point.alpha,
                                 title=title, x.lab=x.lab, y.lab=y.lab,
