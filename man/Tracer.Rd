@@ -54,7 +54,7 @@ If \code{burn.in} is NULL, then use \code{burn.in.perc}, else
 consider \code{burn.in} first.
 }
 \examples{
-mcmc.log <- readMCMCLog("data-raw/star.beast.log")
+mcmc.log <- readMCMCLog("data/star.beast.log")
 
 mcmc.traces <- getTraces(mcmc.log)
 

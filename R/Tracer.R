@@ -26,7 +26,7 @@
 #' @keywords Tracer
 #' @export
 #' @examples
-#' mcmc.log <- readMCMCLog("data-raw/star.beast.log")
+#' mcmc.log <- readMCMCLog("data/star.beast.log")
 #'
 #' @rdname Tracer
 readMCMCLog <- function(file, rm.na.col=TRUE, ...) {

@@ -28,7 +28,7 @@
 #' @keywords Tracer
 #' @export
 #' @examples
-#' mcmc.log <- readMCMCLog("data-raw/star.beast.log")
+#' mcmc.log <- readMCMCLog("data/star.beast.log")
 #' burn.in.stats <- getBurnIn(rownames(mcmc.log))
 #' burn.in.stats
 #' names(mcmc.log)
