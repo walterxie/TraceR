@@ -2,7 +2,7 @@
 
 In development. 
 
-##Not only the subset, but also more
+## Not only the subset, but also more
 
 This package is a simplified implementation of [Tracer v1.6](http://beast.bio.ed.ac.uk/tracer) in R.  
 
@@ -13,10 +13,10 @@ This package is not only the subset of Tracer v1.6,
 but also aims to provide more visualizations to understand the Bayesian MCMC result, 
 and also to make batch processing of multipe logs easier. 
 
-##Citation
+## Citation
 Rambaut A, Suchard MA, Xie D & Drummond AJ (2014) Tracer v1.6
 
-##Installation
+## Installation
 
 You can use the **devtools** *install\_github()* function to install the lastest development version directly from the GitHub.
 
@@ -46,7 +46,7 @@ library("ComMA")
 ```
 
 
-##Tutorial
+## Tutorial
 
 
 
