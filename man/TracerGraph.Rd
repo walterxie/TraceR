@@ -5,10 +5,22 @@
 \alias{gtTraces}
 \title{Tracer Graph in R}
 \usage{
-gtTraces(mcmc.log, burn.in, trace.id = c("posterior"), drop.1st.row = TRUE,
-  line.or.point = 1, point.size = 1, point.alpha = 1, line.alpha = 0.8,
-  title = "Trace", x.lab = NULL, y.lab = NULL,
-  legend.title = "parameters", verbose = TRUE, ...)
+gtTraces(
+  mcmc.log,
+  burn.in,
+  trace.id = c("posterior"),
+  drop.1st.row = TRUE,
+  line.or.point = 1,
+  point.size = 1,
+  point.alpha = 1,
+  line.alpha = 0.8,
+  title = "Trace",
+  x.lab = NULL,
+  y.lab = NULL,
+  legend.title = "parameters",
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{mcmc.log}{The data frame from MCMC log file whose
@@ -49,4 +61,3 @@ gt <- gtTraces(mcmc.log, burn.in.stats$burn.in, trace.id=c("TreeHeight.Species",
 
 }
 \keyword{Tracer}
-

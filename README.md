@@ -26,16 +26,25 @@ devtools::install_github("walterxie/TraceR")
 library("TraceR")
 ```
 
-This package depends on [ComMA](https://github.com/walterxie/ComMA) package , which also needs to be installed:
+Or install from `TraceR_*.tar.gz`.
+
 ```R
-devtools::install_github("walterxie/ComMA")
-library("ComMA")
+install.packages("TraceR_0.0.0.9000.tar.gz", repos = NULL, type = "source")
+library("TraceR")
 ```
 
 To see all exported functions:
 ```R
 help(package = "TraceR")
 ```
+
+The dependency of [ComMA](https://github.com/walterxie/ComMA) package will be removed in future development.  
+
+```R
+devtools::install_github("walterxie/ComMA")
+library("ComMA")
+```
+
 
 ##Tutorial
 

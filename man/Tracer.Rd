@@ -2,16 +2,35 @@
 % Please edit documentation in R/Tracer.R
 \name{Tracer}
 \alias{Tracer}
-\alias{getBurnIn}
-\alias{getTraces}
 \alias{readMCMCLog}
+\alias{getTraces}
+\alias{analyseTraces}
 \title{Tracer in R}
 \usage{
-readMCMCLog(file, rm.na.col = TRUE, ...)
+readMCMCLog(
+  file,
+  delim = "\\t",
+  comment = "#",
+  samp.col = 1,
+  rm.na.col = TRUE,
+  ...
+)
 
-getBurnIn(samples, burn.in = NULL, burn.in.perc = 0.1, verbose = TRUE)
+getTraces(
+  mcmc.log,
+  burn.in.state = NULL,
+  burn.in = 0.1,
+  samp.col = 1,
+  verbose = TRUE
+)
 
-getTraces(mcmc.log, burn.in = NULL, burn.in.perc = 0.1, verbose = TRUE)
+analyseTraces(
+  traces,
+  id = c(),
+  trace.stats = c("mean", "stderr of mean", "stdev", "variance", "median", "mode",
+    "geometric mean", "95\% HPD Interval", "effective sample size (ESS)"),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{file}{The file to read/write.}
@@ -21,15 +40,11 @@ missing values (NA). Default to TRUE.}
 
 \item{...}{Other arguments passed to \code{\link{readFile}}.}
 
-\item{burn.in}{The number of states of burn in. Default to NULL
-to use \code{burn.in.perc}. Otherwise, use \code{burn.in}.}
-
-\item{burn.in.perc}{The percentage of total chain length to be burn in.
-Default to 0.1. Only used if \code{burn.in} is NULL.}
-
 \item{mcmc.log}{The data frame from MCMC log file whose
 column names are parameters and row names are the number
 of states at each sample.}
+
+\item{traces}{The data frame.}
 }
 \description{
 A simplified implementation of Tracer \url{http://beast.bio.ed.ac.uk/tracer} in R.
@@ -44,22 +59,22 @@ and alos focus on making batch processing of multipe logs easier.
 whose column names are parameters and row names are the number
 of states at each sample.
 
-\code{getBurnIn} returns a list of statistics inlcuding \code{burn.in}
-and \code{step.size}, given the data frame read from \code{readMCMCLog}.
-It also calculate \code{burn.in} from \code{burn.in.perc}, if it is NULL.
-
 \code{getTraces} preprocesses the data frame returned from
 \code{readMCMCLog}.
-If \code{burn.in} is NULL, then use \code{burn.in.perc}, else
-consider \code{burn.in} first.
+If \code{burn.in.state} is NULL, then use \code{burn.in}, else
+consider \code{burn.in.state} first.
+
+\code{analyseTraces} get stats from data frame returned by
+\code{getTraces}.
+If \code{id} is empty, then analyse all columns, otherwise
+analyse the selected column(s) only.
 }
 \examples{
 mcmc.log <- readMCMCLog("data/star.beast.log")
 
 mcmc.traces <- getTraces(mcmc.log)
 
-mcmc.traces <- getTraces(mcmc.log)
+stats <- analyseTraces(traces)
 
 }
 \keyword{Tracer}
-
