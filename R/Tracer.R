@@ -79,7 +79,7 @@ readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=T
 getTraces <- function(mcmc.log, burn.in.state=NULL, burn.in=0.1, samp.col=1, verbose=TRUE) {
   # states in rownames, double from 2e-308 to 2e+308
   samples <- mcmc.log[[samp.col]]
-  row.names(mcmc.log) <- samples # for later use
+  #row.names(mcmc.log) <- samples # Setting row names on a tibble is deprecated
   n.sample <- length(samples)
   last.state <- samples[n.sample]
   step.size <- samples[2]-samples[1]
@@ -136,6 +136,17 @@ analyseTraces <- function(traces, id=c(),
   return(stats)
 }
 
+#' @details
+#' \code{analyse} calculates statistics of one parameter,
+#' such as \code{ESS} and \code{standard error of mean}.
+#'
+#' @param x The trace of one parameter.
+#' @keywords Tracer
+#' @export
+#' @examples
+#' stats.ls <- analyse(trace1)
+#'
+#' @rdname Tracer
 analyse <- function(trace, verbose=TRUE) {
   trace.corr = analyseCorrelation(trace)
 
@@ -147,7 +158,7 @@ analyse <- function(trace, verbose=TRUE) {
   md <- median(trace)
   mo <- mode(trace)
   gm <- gmMean(trace)
-  n.x <- nrow(trace)
+  n.x <- length(trace)
 
   suppressMessages(require(TeachingDemos))
   hpd95 <- emp.hpd(trace, conf=0.95)
@@ -175,21 +186,6 @@ analyse <- function(trace, verbose=TRUE) {
   )
 }
 
-
-# http://stackoverflow.com/questions/2602583/geometric-mean-is-there-a-built-in
-gmMean <- function(x, na.rm=TRUE, zero.propagate = FALSE){
-  if(any(x < 0, na.rm = TRUE)){
-    return(NaN)
-  }
-  if(zero.propagate){
-    if(any(x == 0, na.rm = TRUE)){
-      return(0)
-    }
-    exp(mean(log(x), na.rm = na.rm))
-  } else {
-    exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-  }
-}
 
 # the code is directly imported from Tracer
 # log.every is the step size, namely sampling frequency of the samples
@@ -246,8 +242,24 @@ analyseCorrelation <- function(x, MAX.LAG=2000, verbose=FALSE) {
 
   if (verbose) cat("ESS is ", ESS, ".\n")
 
-  list(ESS=ESS, mean=mean.s, stderr.of.mean=stderr.of.mean,
+  list(ESS=ESS, mean=mean.s, stderr.of.mean=stderr.of.mean, n.samples = n.x,
        var.stats=var.stats, lagged.square.sum=lagged.square.sum) #
+}
+
+
+# http://stackoverflow.com/questions/2602583/geometric-mean-is-there-a-built-in
+gmMean <- function(x, na.rm=TRUE, zero.propagate = FALSE){
+  if(any(x < 0, na.rm = TRUE)){
+    return(NaN)
+  }
+  if(zero.propagate){
+    if(any(x == 0, na.rm = TRUE)){
+      return(0)
+    }
+    exp(mean(log(x), na.rm = na.rm))
+  } else {
+    exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+  }
 }
 
 

@@ -5,6 +5,7 @@
 \alias{readMCMCLog}
 \alias{getTraces}
 \alias{analyseTraces}
+\alias{analyse}
 \title{Tracer in R}
 \usage{
 readMCMCLog(
@@ -31,6 +32,8 @@ analyseTraces(
     "geometric mean", "95\% HPD Interval", "effective sample size (ESS)"),
   verbose = TRUE
 )
+
+analyse(trace, verbose = TRUE)
 }
 \arguments{
 \item{file}{The file to read/write.}
@@ -45,6 +48,8 @@ column names are parameters and row names are the number
 of states at each sample.}
 
 \item{traces}{The data frame.}
+
+\item{x}{The trace of one parameter.}
 }
 \description{
 A simplified implementation of Tracer \url{http://beast.bio.ed.ac.uk/tracer} in R.
@@ -68,6 +73,9 @@ consider \code{burn.in.state} first.
 \code{getTraces}.
 If \code{id} is empty, then analyse all columns, otherwise
 analyse the selected column(s) only.
+
+\code{analyse} calculates statistics of one parameter,
+such as \code{ESS} and \code{standard error of mean}.
 }
 \examples{
 mcmc.log <- readMCMCLog("data/star.beast.log")
@@ -75,6 +83,8 @@ mcmc.log <- readMCMCLog("data/star.beast.log")
 mcmc.traces <- getTraces(mcmc.log)
 
 stats <- analyseTraces(traces)
+
+stats.ls <- analyse(trace1)
 
 }
 \keyword{Tracer}
