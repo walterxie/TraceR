@@ -169,6 +169,10 @@ analyse <- function(trace, verbose=TRUE) {
     log.every = as.integer(attrs$step.size)
     act <- (log.every * n.x) / ess;
   }
+  last.state <- NA
+  if ("last.state" %in% attrs) {
+    last.state = as.double(attrs$last.state)
+  }
 
   list(
     mean = m,
@@ -176,13 +180,12 @@ analyse <- function(trace, verbose=TRUE) {
     stdev = sd,
     variance = v,
     median = md,
-    mode = mo,
-    geometric.mean = gm,
-    HPD95.lower = hpd95[1],
-    HPD95.upper = hpd95[2],
+    mode = mo, geometric.mean = gm,
+    HPD95.lower = hpd95[1], HPD95.upper = hpd95[2],
     ACT = act,
     ESS = ess,
-    n.samples = n.x
+    n.samples = n.x,
+    last.state = last.state
   )
 }
 
