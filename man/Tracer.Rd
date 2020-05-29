@@ -33,7 +33,7 @@ analyseTraces(
   verbose = TRUE
 )
 
-analyse(trace, verbose = TRUE)
+analyse(trace, chain.length = NA, log.every = NA, verbose = TRUE)
 }
 \arguments{
 \item{file}{The file to read/write.}
@@ -41,7 +41,7 @@ analyse(trace, verbose = TRUE)
 \item{rm.na.col}{If TRUE, then remove all columns with all
 missing values (NA). Default to TRUE.}
 
-\item{...}{Other arguments passed to \code{\link{readFile}}.}
+\item{...}{Other arguments passed to \code{\link{read_delim}}.}
 
 \item{mcmc.log}{The data frame from MCMC log file whose
 column names are parameters and row names are the number

@@ -22,7 +22,7 @@
 #' @param file The file to read/write.
 #' @param rm.na.col If TRUE, then remove all columns with all
 #' missing values (NA). Default to TRUE.
-#' @param ... Other arguments passed to \code{\link{readFile}}.
+#' @param ... Other arguments passed to \code{\link{read_delim}}.
 #' @keywords Tracer
 #' @export
 #' @examples
@@ -127,7 +127,14 @@ analyseTraces <- function(traces, id=c(),
   if (length(id) > 0) {
     traces <- traces %>% select(id)
   }
-  stats <- lapply(traces, function(x) analyse(x, verbose))
+  attrs <- attributes(traces)
+  if ("step.size" %in% names(attrs) && "last.state" %in% names(attrs)) {
+    stats <- lapply(traces, function(x)
+      analyse(x, chain.length=as.double(attrs$last.state),
+              log.every=as.integer(attrs$step.size), verbose=verbose))
+  } else {
+    stats <- lapply(traces, function(x) analyse(x, verbose))
+  }
 
   # Row names aren't preserved with many dplyr and tidyr operations.
   # It's best to not rely on them but use rownames_to_column() instead.
@@ -147,7 +154,7 @@ analyseTraces <- function(traces, id=c(),
 #' stats.ls <- analyse(trace1)
 #'
 #' @rdname Tracer
-analyse <- function(trace, verbose=TRUE) {
+analyse <- function(trace, chain.length=NA, log.every=NA, verbose=TRUE) {
   trace.corr = analyseCorrelation(trace)
 
   m <- trace.corr$mean
@@ -163,15 +170,10 @@ analyse <- function(trace, verbose=TRUE) {
   suppressMessages(require(TeachingDemos))
   hpd95 <- emp.hpd(trace, conf=0.95)
 
+  # attrs not passed by lapply
   act <- NA
-  attrs <- attributes(trace)
-  if ("step.size" %in% attrs) {
-    log.every = as.integer(attrs$step.size)
-    act <- (log.every * n.x) / ess;
-  }
-  last.state <- NA
-  if ("last.state" %in% attrs) {
-    last.state = as.double(attrs$last.state)
+  if (!is.na(log.every)) {
+    act <- (as.integer(log.every) * n.x) / ess;
   }
 
   list(
@@ -185,7 +187,8 @@ analyse <- function(trace, verbose=TRUE) {
     ACT = act,
     ESS = ess,
     n.samples = n.x,
-    last.state = last.state
+    chain.length = chain.length,
+    log.every = log.every
   )
 }
 
