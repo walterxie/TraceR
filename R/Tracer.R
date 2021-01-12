@@ -65,7 +65,7 @@ readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=T
 
 #' @details
 #' \code{getTraces} preprocesses the data frame returned from
-#' \code{readMCMCLog}.
+#' \code{readMCMCLog} to get the traces.
 #' If \code{burn.in.state} is NULL, then use \code{burn.in}, else
 #' consider \code{burn.in.state} first.
 #'
