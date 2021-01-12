@@ -37,7 +37,7 @@ library("TraceR")
 ```
 # read MCMC log
 mcmc.log <- readMCMCLog("star.beast.log")
-# preprocess to remove burn in
+# get traces and remove burn in
 mcmc.traces <- getTraces(mcmc.log, burn.in=0.1)
 # get stats
 stats <- analyseTraces(traces)
