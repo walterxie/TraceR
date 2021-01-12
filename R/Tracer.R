@@ -20,13 +20,15 @@
 #' of states at each sample.
 #'
 #' @param file The file to read/write.
+#' @param samp.col The column to contain the state number of MCMC in the log file.
+#' Default to the 1st column as the convention of BEAST.
 #' @param rm.na.col If TRUE, then remove all columns with all
 #' missing values (NA). Default to TRUE.
 #' @param ... Other arguments passed to \code{\link{read_delim}}.
 #' @keywords Tracer
 #' @export
 #' @examples
-#' mcmc.log <- readMCMCLog("data/star.beast.log")
+#' mcmc.log <- readMCMCLog("star.beast.log")
 #'
 #' @rdname Tracer
 readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=TRUE, ...) {
@@ -73,7 +75,7 @@ readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=T
 #' @keywords Tracer
 #' @export
 #' @examples
-#' mcmc.traces <- getTraces(mcmc.log)
+#' mcmc.traces <- getTraces(mcmc.log, burn.in=0.1)
 #'
 #' @rdname Tracer
 getTraces <- function(mcmc.log, burn.in.state=NULL, burn.in=0.1, samp.col=1, verbose=TRUE) {
@@ -151,7 +153,7 @@ analyseTraces <- function(traces, id=c(),
 #' @keywords Tracer
 #' @export
 #' @examples
-#' stats.ls <- analyse(trace1)
+#' stats.ls <- analyse(traces[["likelihood"]])
 #'
 #' @rdname Tracer
 analyse <- function(trace, chain.length=NA, log.every=NA, verbose=TRUE) {

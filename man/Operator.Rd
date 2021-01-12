@@ -13,7 +13,7 @@ readState(file, acc.cols = c("accept", "reject"), id.cols = c("id", "p"))
 \item{acc.cols, id.cols}{The column names which matches the names in json.}
 }
 \description{
-Extract the sumary of operator proposals from BEAST 2 \url{http://www.beast2.org} output.
+Extract the summary of operator proposals from BEAST 2 \url{http://www.beast2.org} output.
 
 Tuning: The value of the operator's tuning parameter, or '-' if the operator can't be optimized.
 accept: The total number of times a proposal by this operator has been accepted.

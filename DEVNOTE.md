@@ -1,20 +1,12 @@
 # Developer Note
 
-The following commands create __*.Rd__ files to the __man__ directory, 
-and update __NAMESPACE__ file in the package directory.
+RStudio Version 1.2.5033
 
-```
-setwd("???/TraceR")
+Menu `Build` => `Build Source Package`
 
-library("devtools")
-library(roxygen2)
-
-document()
-```
-
-The following commands install package from local.
-```
-library("devtools")
-install("???/TraceR")
+```R
+remove.packages("TraceR")
+install.packages("TraceR_0.0.0.9000.tar.gz", repos = NULL, type = "source")
 library("TraceR")
 ```
+

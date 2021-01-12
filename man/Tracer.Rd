@@ -38,6 +38,9 @@ analyse(trace, chain.length = NA, log.every = NA, verbose = TRUE)
 \arguments{
 \item{file}{The file to read/write.}
 
+\item{samp.col}{The column to contain the state number of MCMC in the log file.
+Default to the 1st column as the convention of BEAST.}
+
 \item{rm.na.col}{If TRUE, then remove all columns with all
 missing values (NA). Default to TRUE.}
 
@@ -78,13 +81,13 @@ analyse the selected column(s) only.
 such as \code{ESS} and \code{standard error of mean}.
 }
 \examples{
-mcmc.log <- readMCMCLog("data/star.beast.log")
+mcmc.log <- readMCMCLog("star.beast.log")
 
-mcmc.traces <- getTraces(mcmc.log)
+mcmc.traces <- getTraces(mcmc.log, burn.in=0.1)
 
 stats <- analyseTraces(traces)
 
-stats.ls <- analyse(trace1)
+stats.ls <- analyse(traces[["likelihood"]])
 
 }
 \keyword{Tracer}
