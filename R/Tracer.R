@@ -210,7 +210,8 @@ analyseCorrelation <- function(x, MAX.LAG=2000, verbose=FALSE) {
   gamma.stat=c()
   for (lag in 1:max.lag) {
     gamma.stat[lag] = 0
-    # gamma.stat[1] = sum( (x_i - mean)(x_{i+1} - mean) ) / n
+    # gamma.stat[1] = SUM_{i=1}( (x_i - mean)(x_{i+1} - mean) ) / N
+    # gamma.stat[lag] = SUM_{i=1}( (x_i - mean)(x_{i+lag-1} - mean) ) / N
     for (s in 1:(n.x - lag + 1)) {
       del1 = x[s] - samp.mean;
       # Note: both samples and lag index start from 1 NOT 0
@@ -244,7 +245,8 @@ analyseCorrelation <- function(x, MAX.LAG=2000, verbose=FALSE) {
   #   ACT = log.every * var.stats / gamma.stat[1];
   # }
 
-  # effective sample size, ESS = M * ( var(x) + 2*cov(lag-1, lag) ) / var(x)
+  ### effective sample size
+  # ESS = N * gamma.stat[1] / ( gamma.stat[1] + SUM_{lag=3}(2.0 * (gamma.stat[lag-1] + gamma.stat[lag])) )
   if (gamma.stat[1] == 0) {
     ESS = 1;
   } else {
