@@ -1,6 +1,6 @@
 # Author: Rambaut A, Suchard MA, Xie D & Drummond AJ (2014) Tracer v1.6
 # Modified by Walter Xie (D Xie)
-# Accessed on 27 May 2020
+# Accessed on 14 Jan 2021
 
 
 #' @name Tracer
@@ -91,7 +91,8 @@ getTraces <- function(mcmc.log, burn.in.state=NULL, burn.in=0.1, samp.col=1, ver
     traces <- mcmc.log[mcmc.log[[samp.col]] > burn.in.state, -1]
     burn.in <- burn.in.state / last.state
   } else {
-    start = round(burn.in * n.sample)
+    # exclude the state == burn.in * n.sample, making same as Tracer
+    start = round(burn.in * n.sample) + 1
     traces <- mcmc.log[start:n.sample, -1]
     burn.in.state <- burn.in * last.state
   }
@@ -175,6 +176,7 @@ analyse <- function(trace, chain.length=NA, log.every=NA, verbose=TRUE) {
   # attrs not passed by lapply
   act <- NA
   if (!is.na(log.every)) {
+    # ESS = (log.every * n.x) / ACT
     act <- (as.integer(log.every) * n.x) / ess;
   }
 
@@ -194,36 +196,38 @@ analyse <- function(trace, chain.length=NA, log.every=NA, verbose=TRUE) {
   )
 }
 
+### internal functions ###
 
 # the code is directly imported from Tracer
-# log.every is the step size, namely sampling frequency of the samples
+# log.every (step size) is the size of the step between states, also sampling frequency
 analyseCorrelation <- function(x, MAX.LAG=2000, verbose=FALSE) {
   n.x = length(x);
   max.lag = min(n.x-1, MAX.LAG); # Note: lag index starts from 1 NOT 0
-  mean.s = mean(x)
+  samp.mean = mean(x)
 
   if (verbose) cat("Input", n.x, "samples, ")
 
-  lagged.square.sum=c()
+  gamma.stat=c()
   for (lag in 1:max.lag) {
-    lagged.square.sum[lag] = 0
+    gamma.stat[lag] = 0
+    # gamma.stat[1] = sum( (x_i - mean)(x_{i+1} - mean) ) / n
     for (s in 1:(n.x - lag + 1)) {
-      del1 = x[s] - mean.s;
+      del1 = x[s] - samp.mean;
       # Note: both samples and lag index start from 1 NOT 0
-      del2 = x[s + lag - 1] - mean.s;
-      lagged.square.sum[lag] = lagged.square.sum[lag] + (del1 * del2);
+      del2 = x[s + lag - 1] - samp.mean;
+      gamma.stat[lag] = gamma.stat[lag] + (del1 * del2);
     } # end s loop
-
-    lagged.square.sum[lag] = lagged.square.sum[lag] / (n.x - lag);
+    # Note: lag index starts from 1 NOT 0
+    gamma.stat[lag] = gamma.stat[lag] / (n.x - lag - 1);
 
     if (lag == 1) {
-      var.stats = lagged.square.sum[1];
+      var.stats = gamma.stat[1];
     } else if (lag %% 2 != 0) { # Note: lag index starts from 1 NOT 0
       # fancy stopping criterion :)
-      if (lagged.square.sum[lag - 1] + lagged.square.sum[lag] > 0) {
-        var.stats = var.stats + 2.0 * (lagged.square.sum[lag - 1] + lagged.square.sum[lag]);
+      if (gamma.stat[lag - 1] + gamma.stat[lag] > 0) {
+        var.stats = var.stats + 2.0 * (gamma.stat[lag - 1] + gamma.stat[lag]);
       } else { # stop for loop
-        lagged.square.sum = lagged.square.sum[1:lag]
+        gamma.stat = gamma.stat[1:lag]
         break
       }
     }
@@ -232,28 +236,27 @@ analyseCorrelation <- function(x, MAX.LAG=2000, verbose=FALSE) {
   # standard error of mean
   stderr.of.mean = sqrt(var.stats / n.x);
 
+  ### avoid to provide log.every
   # auto correlation time
-  # if (lagged.square.sum[1] == 0) {
+  # if (gamma.stat[1] == 0) {
   #   ACT = 0;
   # } else {
-  #   # ACT = log.every * varStat / lagged.square.sum[1];
-  #   ACT = var.stats;
+  #   ACT = log.every * var.stats / gamma.stat[1];
   # }
 
-  # effective sample size
-  if (lagged.square.sum[1] == 0) {
+  # effective sample size, ESS = M * ( var(x) + 2*cov(lag-1, lag) ) / var(x)
+  if (gamma.stat[1] == 0) {
     ESS = 1;
   } else {
     #ESS = (log.every * n.x) / ACT;
-    ESS = lagged.square.sum[1] * n.x / var.stats;
+    ESS = n.x * gamma.stat[1] / var.stats;
   }
 
   if (verbose) cat("ESS is ", ESS, ".\n")
 
-  list(ESS=ESS, mean=mean.s, stderr.of.mean=stderr.of.mean, n.samples = n.x,
-       var.stats=var.stats, lagged.square.sum=lagged.square.sum) #
+  list(ESS=ESS, mean=samp.mean, stderr.of.mean=stderr.of.mean, n.samples = n.x,
+       var.stats=var.stats, gamma.stat=gamma.stat) #
 }
-
 
 # http://stackoverflow.com/questions/2602583/geometric-mean-is-there-a-built-in
 gmMean <- function(x, na.rm=TRUE, zero.propagate = FALSE){
@@ -269,8 +272,5 @@ gmMean <- function(x, na.rm=TRUE, zero.propagate = FALSE){
     exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
   }
 }
-
-
-
 
 

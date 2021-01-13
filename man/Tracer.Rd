@@ -68,7 +68,7 @@ whose column names are parameters and row names are the number
 of states at each sample.
 
 \code{getTraces} preprocesses the data frame returned from
-\code{readMCMCLog}.
+\code{readMCMCLog} to get the traces.
 If \code{burn.in.state} is NULL, then use \code{burn.in}, else
 consider \code{burn.in.state} first.
 

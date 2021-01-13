@@ -34,19 +34,10 @@ devtools::install_github("walterxie/TraceR")
 library("TraceR")
 ```
 
-```
-# read MCMC log
-mcmc.log <- readMCMCLog("star.beast.log")
-# get traces and remove burn in
-mcmc.traces <- getTraces(mcmc.log, burn.in=0.1)
-# get stats
-stats <- analyseTraces(traces)
-```
-
-
 Or install from `TraceR_*.tar.gz`.
 
 ```R
+setwd("~/WorkSpace/TracerR")
 install.packages("TraceR_0.0.0.9000.tar.gz", repos = NULL, type = "source")
 library("TraceR")
 ```
@@ -54,6 +45,16 @@ library("TraceR")
 To see all exported functions:
 ```R
 help(package = "TraceR")
+```
+
+Try the following commands:
+```
+# read MCMC log
+mcmc.log <- readMCMCLog("data/star.beast.log")
+# get traces and remove burn in
+traces <- getTraces(mcmc.log, burn.in=0.1)
+# get stats
+stats <- analyseTraces(traces)
 ```
 
 [ComMA](https://github.com/walterxie/ComMA) package here only provides plotting functions.  
