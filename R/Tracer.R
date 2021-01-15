@@ -12,7 +12,7 @@
 #' BEAST 2 \url{http://www.beast2.org}, or MrBayes \url{http://beast.bio.ed.ac.uk}.
 #'
 #' It aims to provide various visualizations to understand the Bayesian MCMC result,
-#' and alos focus on making batch processing of multipe logs easier.
+#' and also focus on making batch processing of multiple logs easier.
 #'
 #' @details
 #' \code{readMCMCLog} reads MCMC log files and return a data frame
@@ -43,10 +43,10 @@ readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=T
   log.every = mcmc.log[[samp.col]][2]-mcmc.log[[samp.col]][1] # "Sample"
   last.state <- mcmc.log[[samp.col]][n.samples]
 
-  cat("Load ", n.samples, " samples, ",
-      "chain length", prettyNum(last.state, big.mark=",",scientific=FALSE),
-      ", log every", prettyNum(log.every, big.mark=",",scientific=FALSE),
-      ", file = ", file, " .\n")
+  cat("Loaded ", prettyNum(n.samples, big.mark=",",scientific=FALSE), " samples, ",
+      "chain length ", prettyNum(last.state, big.mark=",",scientific=FALSE),
+      ", log every ", prettyNum(log.every, big.mark=",",scientific=FALSE),
+      ", file = ", file, ".\n", sep="")
 
   if (rm.na.col) {
     col.names <- colnames(mcmc.log)
@@ -98,9 +98,9 @@ getTraces <- function(mcmc.log, burn.in.state=NULL, burn.in=0.1, samp.col=1, ver
   }
 
   if (verbose)
-    cat("Remaining", nrow(traces), "samples after burn-in ", burn.in,
+    cat("Remaining ", nrow(mcmc.traces), " samples after burn-in ", burn.in,
         ", where burn-in ends at state ", burn.in.state,
-        ", step size ", step.size, ", last state ", last.state, " .\n")
+        ", step size ", step.size, ", last state ", last.state, ".\n", sep="");
 
   attr(traces,"burn.in") <- burn.in
   attr(traces,"step.size") <- step.size
@@ -254,7 +254,7 @@ analyseCorrelation <- function(x, MAX.LAG=2000, verbose=FALSE) {
     ESS = n.x * gamma.stat[1] / var.stats;
   }
 
-  if (verbose) cat("ESS is ", ESS, ".\n")
+  if (verbose) cat("ESS is ", ESS, ".\n", sep="")
 
   list(ESS=ESS, mean=samp.mean, stderr.of.mean=stderr.of.mean, n.samples = n.x,
        var.stats=var.stats, gamma.stat=gamma.stat) #
