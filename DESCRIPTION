@@ -1,6 +1,6 @@
 Package: TraceR
 Title: Simplified Tracer in R
-Version: 0.0.0.9000
+Version: 0.0.0.91
 Authors@R: c(person("Dong", "Xie", email = "walter@cs.auckland.ac.nz", role = c("aut", "cre", "cph")),
 			person("Andrew", "Rambaut", role = c("aut", "cph")),
 			person("Marc", "Suchard", role = c("aut", "cph")),

@@ -98,7 +98,7 @@ getTraces <- function(mcmc.log, burn.in.state=NULL, burn.in=0.1, samp.col=1, ver
   }
 
   if (verbose)
-    cat("Remaining ", nrow(mcmc.traces), " samples after burn-in ", burn.in,
+    cat("Remaining ", nrow(traces), " samples after burn-in ", burn.in,
         ", where burn-in ends at state ", burn.in.state,
         ", step size ", step.size, ", last state ", last.state, ".\n", sep="");
 
