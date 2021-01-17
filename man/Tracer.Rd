@@ -60,7 +60,7 @@ It can read MCMC log files from BEAST 1 \url{http://beast.bio.ed.ac.uk},
 BEAST 2 \url{http://www.beast2.org}, or MrBayes \url{http://beast.bio.ed.ac.uk}.
 
 It aims to provide various visualizations to understand the Bayesian MCMC result,
-and alos focus on making batch processing of multipe logs easier.
+and also focus on making batch processing of multiple logs easier.
 }
 \details{
 \code{readMCMCLog} reads MCMC log files and return a data frame
