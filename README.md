@@ -38,7 +38,7 @@ Or install from `TraceR_*.tar.gz`.
 
 ```R
 setwd("~/WorkSpace/TracerR")
-install.packages("TraceR_0.0.0.9000.tar.gz", repos = NULL, type = "source")
+install.packages("TraceR_0.0.0.91.tar.gz", repos = NULL, type = "source")
 library("TraceR")
 ```
 
