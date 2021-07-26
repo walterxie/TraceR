@@ -25,4 +25,8 @@ Pr(acc|m): The acceptance probability (\code{accept} as a fraction of the total 
 \code{readState} reads MCMC state log file and return a data frame
 to summarise operators' acceptence and rejection.
 }
+\examples{
+ops <- readState("data/star.beast.state")
+
+}
 \keyword{Operator}

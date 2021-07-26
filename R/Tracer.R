@@ -1,4 +1,6 @@
-# Author: Rambaut A, Suchard MA, Xie D & Drummond AJ (2014) Tracer v1.6
+# Posterior summarization in Bayesian phylogenetics using Tracer 1.7
+# A Rambaut, AJ Drummond, D Xie, G Baele, MA Suchard
+# Systematic biology 67 (5), 901
 # Modified by Walter Xie (D Xie)
 # Accessed on 14 Jan 2021
 
@@ -72,6 +74,7 @@ readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=T
 #' @param mcmc.log The data frame from MCMC log file whose
 #' column names are parameters and row names are the number
 #' of states at each sample.
+#' @param burn.in the proportion of samples treated as burn-in stage from the MCMC.
 #' @keywords Tracer
 #' @export
 #' @examples

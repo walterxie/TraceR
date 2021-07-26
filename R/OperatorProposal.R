@@ -23,7 +23,7 @@
 #' @keywords Operator
 #' @export
 #' @examples
-#' ops <- readState("data/star.beast.state"")
+#' ops <- readState("data/star.beast.state")
 #'
 #' @rdname Operator
 readState <- function(file, acc.cols=c("accept","reject"), id.cols=c("id","p")) {

@@ -2,7 +2,9 @@
 
 export(analyse)
 export(analyseTraces)
+export(analyseTreeStats)
 export(getTraces)
 export(gtTraces)
 export(readMCMCLog)
 export(readState)
+export(readTrees)

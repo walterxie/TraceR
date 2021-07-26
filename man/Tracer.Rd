@@ -50,6 +50,8 @@ missing values (NA). Default to TRUE.}
 column names are parameters and row names are the number
 of states at each sample.}
 
+\item{burn.in}{the proportion of samples treated as burn-in stage from the MCMC.}
+
 \item{traces}{The data frame.}
 
 \item{x}{The trace of one parameter.}
