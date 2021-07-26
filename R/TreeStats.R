@@ -73,8 +73,7 @@ readTrees <- function(file, burn.in=0.1, min.trees=10) {
 #'
 #' @rdname TreeStats
 analyseTreeStats <- function(tree.stats, id=c("total.br.len","tree.height")) {
-  require("TracerR")
-  tre.sta <- TracerR::analyseTraces(tree.stats, id=id)
+  tre.sta <- analyseTraces(tree.stats, id=id)
   # ? HPD95.lower.STATE_14150000
   tre.sta$trace <- sub("\\.STATE.*$","",tre.sta$trace, ignore.case = T)
   return(tre.sta)
