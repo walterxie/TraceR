@@ -60,6 +60,45 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1) {
 
 }
 
+#' @details
+#' \code{summariseTrueValues} creates one file to contain all of the true values
+#' from all LPhy simulations. The generated "true.log" can be used to BEAST 2
+#' model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
+#'
+#'
+#'
+#' @param true.logs The list of one-line log files containing true values
+#'                  from LPhy simulations, where one LPhy log file per simulation.
+#' @param true.trees  The list of one-tree log files containing true trees
+#'                    from LPhy simulations, where one LPhy tree file per simulation.
+#' @param lphy.params  The list of
+#' @param beast.params The list of
+#' @keywords Coverage
 
+#' @examples
+#' WD = file.path("~/WorkSpace/MyValidations/")
+#' setwd(WD)
+#' true.logs = list.files(pattern = "_true.log")
+#' true.trees = list.files(pattern = "_true_ψ.trees")
+#' summariseTrueValues()
+#'
+#' @rdname Coverage
+summariseTrueValues <- function(true.logs, true.trees=NA,
+                                lphy.params=c("μ","Θ"),
+                                beast.params=c("mu","Theta") ) {
+  require(tidyverse)
+
+  params = c("mu","Theta", "r_0", "r_1", "r_2",
+             "kappa.1", "kappa.2", "kappa.3",
+             "pi_0.A", "pi_0.C", "pi_0.G", "pi_0.T",
+             "pi_1.A", "pi_1.C", "pi_1.G", "pi_1.T",
+             "pi_2.A", "pi_2.C", "pi_2.G", "pi_2.T" )#,"psi.height")
+  tre.params = c("total.br.len","tree.height")
+  stats.name = c("mean", "HPD95.lower", "HPD95.upper", "ESS")
+  # must have the same order of param
+  params2 = c("μ","Θ","r_0","r_1","r_2","κ_0","κ_1","κ_2","π_0_0","π_0_1","π_0_2","π_0_3",
+              "π_1_0","π_1_1","π_1_2","π_1_3","π_2_0","π_2_1","π_2_2","π_2_3")
+
+}
 
 
