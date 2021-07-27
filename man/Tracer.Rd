@@ -50,7 +50,8 @@ missing values (NA). Default to TRUE.}
 column names are parameters and row names are the number
 of states at each sample.}
 
-\item{burn.in}{the proportion of samples treated as burn-in stage from the MCMC.}
+\item{burn.in}{the proportion of samples treated as the burn-in stage
+during MCMC. Default to 0.1.}
 
 \item{traces}{The data frame.}
 

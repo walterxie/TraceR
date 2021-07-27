@@ -74,7 +74,8 @@ readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=T
 #' @param mcmc.log The data frame from MCMC log file whose
 #' column names are parameters and row names are the number
 #' of states at each sample.
-#' @param burn.in the proportion of samples treated as burn-in stage from the MCMC.
+#' @param burn.in the proportion of samples treated as the burn-in stage
+#' during MCMC. Default to 0.1.
 #' @keywords Tracer
 #' @export
 #' @examples
