@@ -32,6 +32,8 @@
 #' burn.in.stats <- getBurnIn(rownames(mcmc.log))
 #' burn.in.stats
 #' names(mcmc.log)
+#'
+#' require("ComMA") # https://github.com/walterxie/ComMA
 #' gt <- gtTraces(mcmc.log, burn.in.stats$burn.in)
 #' plot(gt)
 #'
