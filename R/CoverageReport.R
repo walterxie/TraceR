@@ -72,9 +72,9 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
 
 selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
                               file.steam.fun=function(prefix, i){ paste0(prefix, "_", i) }
-                              file.postfix="tsv", tree.file.postfix="trees.tsv" ) {
+                              file.postfix="tsv", tree.file.postfix="trees.tsv",
+                              extra.files = c() ) {
   require(tidyverse)
-
   # record 100 files whose ESS >= 200
   tracesDF <- list()
   # if any of 100 has <200 ESS, then it will be replaced by one of extra 10
@@ -84,30 +84,37 @@ selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
     fn <- file.steam.fun(prefix, i)
     fi <- paste0(fn, ".", file.postfix)
     stopifnot(file.exists(fi))
-    tre.sta.fi <- paste0(fn, ".", tree.file.postfix)
 
-    # "mean", "HPD95.lower", "HPD95.upper", "ESS"
-    traces <- readTraces(fi) %>% select(trace, params)
+    cat("Load ", fi, "...\n")
+    # "trace" col has "mean", ..., "HPD95.lower", "HPD95.upper", "ESS"
+    traces <- try(read_tsv(fi))
+    # take ESS row
     ESS <- traces %>% filter(trace == "ESS") %>% select(!trace)
     minESS <- min(ESS %>% as.numeric)
     cat(fi, ", min ESS = ", minESS, "\n")
 
+    # if tree stats file exists
+    tre.sta.fi <- paste0(fn, ".", tree.file.postfix)
     if (file.exists(tre.sta.fi)) {
       # add tree stats
-      tre.sta <- try(read_tsv(tre.sta.fi)) %>%
-        filter(trace %in% stats.name) %>% select(!trace)
-      traces <- cbind(traces, tre.sta)
+      traces <- addTreeStats(tre.sta.fi, traces)
     }
 
+
+
+
+    #TODO
     if (minESS < 200) {
-      selected <- pullAValidResultFromExtraPool(fi, etr, ext.pool=extraStats, params=c("trace", params))
+      selected <- pullAnthorFromExtra(etr, extra.files=extra.files)
       # selected extra
       file.selected <- selected$file.selected
+      cat("Replace the low ESS result", fi, "to", file.selected, "\n")
+
       fn.sel <- sub('\\.tsv$', '', file.selected)
       tracesDF[[fn.sel]] <- selected$traces
 
       # sync current index in the pool
-      etr <- selected$ext.idx
+      etr <- selected$extr.idx
 
       # record low ESS
       tmp.low <- ESS %>% as_tibble %>% add_column(fn, .before=1) %>% add_column(fn.sel, .before=2)
@@ -118,7 +125,74 @@ selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
     }
   }
 
-  list()
+  list(selected = tracesDF, lowESS = lowESS)
+}
+
+
+
+
+
+
+
+
+### private functions
+
+# add tree stats DF into traces DF
+addTreeStats <- function(tree.stats.file="sim_0.trees.tsv", traces) {
+  # add tree stats
+  tre.sta <- try(read_tsv(tre.sta.fi)) %>% select(!trace)
+  # they should have the same rows as stats file
+  if (! all(traces$trace == tre.sta$trace) )
+    stop("Trace stats ", nrow(traces), " should contain the same stats in 'trace' column ",
+         "as the tree stats file ", tre.sta.fi, " !\n")
+  return( traces %>% left_join(tre.sta, by = "trace") )
+}
+
+#trace	posterior	likelihood
+#mean	-1395.71800741416	-1260.57129157319
+#stderr.of.mean	0.948421280126143	0.142003271885284
+#stdev	21.6784291082163	5.61509246716363
+pullAnthorFromExtra <- function(extr.idx, extra.files=c(), extr.tree.files=c()) {
+  require(tidyverse)
+  if (extr.idx >= length(extra.files)) # length(extra.files) extra
+    stop("All extra simulations have been used ! ", extr.idx, " >= ", length(extra.files))
+
+  minESS.list <- list()
+
+  while (extr.idx < length(extra.files)) {
+    # pick up "extr.idx" result from extra pool
+    et.fi <- extra.files[extr.idx]
+    stopifnot(file.exists(et.fi))
+
+    # must incl trace column
+    traces <- try(read_tsv(et.fi))
+
+    ESS <- traces %>% filter(trace == "ESS") %>%
+      select(!trace) %>% as.numeric
+    minESS <- min(ESS)
+    minESS.list[[et.fi]] <- minESS
+    cat(et.fi, ", min ESS = ", minESS, "\n")
+
+    # all ESS >= 200 then break, otherwise continue the loop
+    if (minESS >= 200) {
+
+      if (length(extr.tree.files)>0) {
+        tre.sta.fi <- extr.tree.files[extr.idx]
+        stopifnot(file.exists(tre.sta.fi))
+        # add tree stats
+        traces <- addTreeStats(tre.sta.fi, traces)
+      }
+      # point to the next before break loop
+      extr.idx <- extr.idx + 1
+      break
+    } # end if minESS >= 200
+
+    # must increase after pick up tree stats from extra pool
+    extr.idx <- extr.idx + 1
+  } # end while
+
+  list(file.selected=et.fi, extr.idx=extr.idx,
+       traces=traces, minESS.list = minESS.list )
 }
 
 
