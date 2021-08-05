@@ -5,7 +5,7 @@
 #' @title Coverage Report from Model Validation
 #'
 #' @description
-#' The coverage report of a model validation result.
+#' The pipeline to generate a coverage report of the model validation.
 #'
 #' @details
 #' \code{summariseTracesAndTrees} creates the statistical summary of
@@ -17,6 +17,9 @@
 #'                  Default to NA, which will skip to report the tree statistics.
 #' @param burn.in   The proportion of samples treated as the burn-in stage
 #'                  during MCMC. Default to 0.1.
+#' @param stats.fn.fun,tree.stats.fn.fun The function to create the result file names
+#'                  from the given log file names. Set to NA, if you do not want to
+#'                  create the files.
 #' @keywords Coverage
 #' @export
 #' @examples
@@ -24,16 +27,22 @@
 #' setwd(WD)
 #' log.files = list.files(pattern = ".log")
 #' for(lg in log.files) {
+#'   # assume same file stem
 #'   tree.file=paste0(sub('\\.log$', '', lg), ".trees")
-#'   summariseTracesAndTrees(lg, tree.file)
+#'   res <- summariseTracesAndTrees(lg, tree.file)
 #' }
 #'
+#' # skip tree logs
+#' summariseTracesAndTrees(lg, tree.file=NA)
+#'
 #' @rdname Coverage
-summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1) {
+summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
+                                    stats.fn.fun=paste0(sub('\\.log$', '', log.file), ".tsv"),
+                                    tree.stats.fn.fun=paste0(tree.file, ".tsv")) {
   require(tidyverse)
 
   cat("\nProcess ", log.file, "...\n")
-  if (!file.exists(log.file)) stop("\nRequire log file ", log.file)
+  if (!file.exists(log.file)) stop("Cannot find file : ", log.file)
 
   # read MCMC log
   mcmc.log <- readMCMCLog(log.file)
@@ -42,22 +51,22 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1) {
   # get stats
   stats <- analyseTraces(traces)
 
-  write_tsv(stats, paste0(sub('\\.log$', '', log.file), ".tsv"))
+  if (!is.na(stats.fn.fun)) write_tsv(stats, stats.fn.fun)
 
   # add tree stats
+  tre.sta <- NULL
   if (!is.na(tree.file)) {
-
-    if (!file.exists(tree.file)) stop("\nRequire tree file ", tree.file)
+    if (!file.exists(tree.file)) stop("Cannot find file : ", tree.file)
 
     tre.sta.df <- readTrees(tree.file)
     tre.sta <- analyseTreeStats(tre.sta.df)
 
     # ? HPD95.lower.STATE_14150000
     #tre.stats$trace <- sub("\\.STATE.*$","",tre.stats$trace, ignore.case = T)
-
-    write_tsv(tre.sta, paste0(tree.file, ".tsv"))
+    if (!is.na(tree.stats.fn.fun))
+      write_tsv(tre.sta, tree.stats.fn.fun)
   }
-
+  list(stats=stats, tree.stats=tre.sta)
 }
 
 #' @details
