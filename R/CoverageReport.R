@@ -37,8 +37,8 @@
 #'
 #' @rdname Coverage
 summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
-                                    stats.fn.fun=paste0(sub('\\.log$', '', log.file), ".tsv"),
-                                    tree.stats.fn.fun=paste0(tree.file, ".tsv")) {
+                                    stats.fn.fun=function(x){ paste0(sub('\\.log$', '', x), ".tsv") },
+                                    tree.stats.fn.fun=function(x){ paste0(x, ".tsv") }) {
   require(tidyverse)
 
   cat("\nProcess ", log.file, "...\n")
@@ -51,7 +51,7 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
   # get stats
   stats <- analyseTraces(traces)
 
-  if (!is.na(stats.fn.fun)) write_tsv(stats, stats.fn.fun)
+  if (!is.function(stats.fn.fun)) write_tsv(stats, stats.fn.fun(log.file))
 
   # add tree stats
   tre.sta <- NULL
@@ -63,11 +63,65 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
 
     # ? HPD95.lower.STATE_14150000
     #tre.stats$trace <- sub("\\.STATE.*$","",tre.stats$trace, ignore.case = T)
-    if (!is.na(tree.stats.fn.fun))
-      write_tsv(tre.sta, tree.stats.fn.fun)
+    if (!is.function(tree.stats.fn.fun))
+      write_tsv(tre.sta, tree.stats.fn.fun(tree.file))
   }
   list(stats=stats, tree.stats=tre.sta)
 }
+
+
+selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
+                              file.steam.fun=function(prefix, i){ paste0(prefix, "_", i) }
+                              file.postfix="tsv", tree.file.postfix="trees.tsv" ) {
+  require(tidyverse)
+
+  # record 100 files whose ESS >= 200
+  tracesDF <- list()
+  # if any of 100 has <200 ESS, then it will be replaced by one of extra 10
+  lowESS <- tibble()
+  etr <- 1
+  for(i in i.sta:i.end) {
+    fn <- file.steam.fun(prefix, i)
+    fi <- paste0(fn, ".", file.postfix)
+    stopifnot(file.exists(fi))
+    tre.sta.fi <- paste0(fn, ".", tree.file.postfix)
+
+    # "mean", "HPD95.lower", "HPD95.upper", "ESS"
+    traces <- readTraces(fi) %>% select(trace, params)
+    ESS <- traces %>% filter(trace == "ESS") %>% select(!trace)
+    minESS <- min(ESS %>% as.numeric)
+    cat(fi, ", min ESS = ", minESS, "\n")
+
+    if (file.exists(tre.sta.fi)) {
+      # add tree stats
+      tre.sta <- try(read_tsv(tre.sta.fi)) %>%
+        filter(trace %in% stats.name) %>% select(!trace)
+      traces <- cbind(traces, tre.sta)
+    }
+
+    if (minESS < 200) {
+      selected <- pullAValidResultFromExtraPool(fi, etr, ext.pool=extraStats, params=c("trace", params))
+      # selected extra
+      file.selected <- selected$file.selected
+      fn.sel <- sub('\\.tsv$', '', file.selected)
+      tracesDF[[fn.sel]] <- selected$traces
+
+      # sync current index in the pool
+      etr <- selected$ext.idx
+
+      # record low ESS
+      tmp.low <- ESS %>% as_tibble %>% add_column(fn, .before=1) %>% add_column(fn.sel, .before=2)
+      lowESS <- lowESS %>% rbind(tmp.low)
+
+    } else {
+      tracesDF[[fn]] <- traces
+    }
+  }
+
+  list()
+}
+
+
 
 #' @details
 #' \code{summariseTrueValues} creates one file to contain all of the true values
