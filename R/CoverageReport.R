@@ -9,7 +9,11 @@
 #'
 #' 1. Summarise traces statistics for every simulations (normally starting 110,
 #'    where 10 extra simulations are used for replacing any low ESS results
-#'    in the next step), and save each result into a tsv file.
+#'    in the next step), and save each result into a tsv file. It looks like:
+#'    trace           posterior  likelihood  ...
+#'    mean            -16848.58  -16269.03   ...
+#'    stderr.of.mean	0.249      0.200       ...
+#'    ...
 #'    Note: if tree stats are logged into BEAST log file,
 #'    you can set \code{tree.file=NA} to skip creating tree stats tsv file.
 #'    See \code{\link{summariseTracesAndTrees}}.
@@ -114,8 +118,8 @@ selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
 
       # record low ESS
       lowESS <- lowESS %>% add_row(origin=fn,minESS=minESS,replace=fn.sel)
-      if (nrow(selected$minESS)>0) {
-        lowESS <- lowESS %>% rbind(selected$minESS)
+      if (nrow(selected$lowESS)>0) {
+        lowESS <- lowESS %>% rbind(selected$lowESS)
       }
 
     } else {
@@ -198,52 +202,58 @@ pullAnthorFromExtra <- function(curr.idx,
 #' @param params     The vector of parameter names in the BEAST log files.
 #' @param stats.name The vector of names of statistics. They have to be one of
 #'                   names from the 1st column 'trace' in *.tsv file.
+#' @param output.file.fun The function to create the summary file names
+#'                   from the given parameters in the BEAST log.
+#'                   Set to NA, if you do not want to create the files.
 #' @keywords Coverage
 #' @export
 #' @examples
-#' WD = file.path("~/WorkSpace/MyValidations/")
-#' setwd(WD)
-#' true.logs = list.files(pattern = "_true.log")
-#' true.trees = list.files(pattern = "_true_ψ.trees")
-#' summariseTrueValues()
+#' summariseParameters(sele.list,
+#'            params = c("mu","Theta", "r_0", "r_1", "r_3",
+#'                       "psi.treeLength", "psi.height"))
 #'
 #' @rdname Coverage
 summariseParameters <- function(selected=list(),
-          params = c("mu","Theta", "kappa", "psi.treeLength", "psi.height"),
-          stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stderr.of.mean", "ESS")) {
+          params = c("mu","Theta", "psi.treeLength", "psi.height"),
+          stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stderr.of.mean", "ESS"),
+          output.file.fun=function(x){ paste0(x, ".tsv") }) {
   require(tidyverse)
   cat("Select ", length(selected)," simulations : ", paste(names(selected), collapse = ", "), ".\n")
 
   minESS <- c()
-
+  summary <- list()
   for (pa in params) {
     cat("Analyse parameter : ", pa, "...\n")
     df <- tibble(trace=stats.name)
 
-    tra.par <- NULL
+    pa.stats <- NULL
     for(i in 1:length(selected)) {
+      fns <- names(selected)[i]
       # "mean", "HPD95.lower", "HPD95.upper", "ESS"
-      tra.par <- selected[[i]] %>% select(trace, pa) %>% unlist
-      stopifnot(length(tra.par) > 0)
+      pa.stats <- selected[[i]] %>% select(trace, !!pa) %>%
+        filter(trace %in% stats.name)
+      stopifnot(ncol(pa.stats) > 1 && nrow(pa.stats) > 0)
 
-      df <- try(df %>% add_column(!!(names(selected)[i]) := tra.par))
+      df <- df %>% left_join(pa.stats, by = "trace") %>%
+        rename(!!fns := !!pa)
     }
 
     ESS <- df %>% filter(trace == "ESS") %>% select(!trace) %>% unlist
     # to numeric
     tmp.minESS <- min(ESS %>% as.numeric)
-    cat("min ESS = ", tmp.minESS, "\n")
-    minESS <- c(minESS, tmp.minESS)
+    cat(pa, " min ESS = ", tmp.minESS, "\n")
 
-    if (!is.na(tmp.minESS) && tmp.minESS >= 200)
-      write_tsv(df, paste0(pa, ".tsv"))
-    else
+    if (!is.na(tmp.minESS) && tmp.minESS >= 200) {
+      if (is.function(output.file.fun))
+        write_tsv(df, paste0(pa, ".tsv"))
+    } else
       warning("Summary not generated ! ", pa, " min ESS = ", tmp.minESS, "\n")
+
+    minESS <- c(minESS, tmp.minESS)
+    summary[[pa]] <- df
   }
-  cat("min ESS = ", paste(minESS, collapse = ", "), "\n")
-  cat("min of min ESS = ", min(minESS), "\n")
 
-
+  list(summary=summary,minESS=minESS)
 }
 
 #' @details

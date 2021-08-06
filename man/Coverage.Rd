@@ -21,8 +21,9 @@ selectResultByESS(
 
 summariseParameters(
   selected = list(),
-  params = c("mu", "Theta", "kappa", "psi.treeLength", "psi.height"),
-  stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stderr.of.mean", "ESS")
+  params = c("mu", "Theta", "psi.treeLength", "psi.height"),
+  stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stderr.of.mean", "ESS"),
+  output.file.fun = function(x) {     paste0(x, ".tsv") }
 )
 
 summariseTrueValues(
@@ -56,6 +57,10 @@ produced by \code{\link{selectResultByESS}}.}
 \item{stats.name}{The vector of names of statistics. They have to be one of
 names from the 1st column 'trace' in *.tsv file.}
 
+\item{output.file.fun}{The function to create the summary file names
+from the given parameters in the BEAST log.
+Set to NA, if you do not want to create the files.}
+
 \item{true.logs}{The list of one-line log files containing true values
 from LPhy simulations, where one LPhy log file per simulation.}
 
@@ -71,7 +76,11 @@ The pipeline to generate a coverage report of the model validation.
 
 1. Summarise traces statistics for every simulations (normally starting 110,
    where 10 extra simulations are used for replacing any low ESS results
-   in the next step), and save each result into a tsv file.
+   in the next step), and save each result into a tsv file. It looks like:
+   trace           posterior  likelihood  ...
+   mean            -16848.58  -16269.03   ...
+   stderr.of.mean	0.249      0.200       ...
+   ...
    Note: if tree stats are logged into BEAST log file,
    you can set \code{tree.file=NA} to skip creating tree stats tsv file.
    See \code{\link{summariseTracesAndTrees}}.
@@ -117,11 +126,9 @@ low.ess <- sele.res$lowESS
 sele.list <- sele.res$selected
 names(sele.list)
 
-WD = file.path("~/WorkSpace/MyValidations/")
-setwd(WD)
-true.logs = list.files(pattern = "_true.log")
-true.trees = list.files(pattern = "_true_ψ.trees")
-summariseTrueValues()
+summariseParameters(sele.list,
+           params = c("mu","Theta", "r_0", "r_1", "r_3",
+                      "psi.treeLength", "psi.height"))
 
 WD = file.path("~/WorkSpace/MyValidations/")
 setwd(WD)

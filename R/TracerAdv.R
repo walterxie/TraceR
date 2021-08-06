@@ -45,7 +45,7 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
                                     tree.stats.fn.fun=function(x){ paste0(x, ".tsv") }) {
   require(tidyverse)
 
-  cat("\nProcess ", log.file, "...\n")
+  cat("\n")
   if (!file.exists(log.file)) stop("Cannot find file : ", log.file)
 
   # read MCMC log
