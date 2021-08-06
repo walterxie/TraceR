@@ -55,7 +55,8 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
   # get stats
   stats <- analyseTraces(traces)
 
-  if (!is.function(stats.fn.fun)) write_tsv(stats, stats.fn.fun(log.file))
+  if (is.function(stats.fn.fun))
+    write_tsv(stats, stats.fn.fun(log.file))
 
   # add tree stats
   tre.sta <- NULL
@@ -67,7 +68,7 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
 
     # ? HPD95.lower.STATE_14150000
     #tre.stats$trace <- sub("\\.STATE.*$","",tre.stats$trace, ignore.case = T)
-    if (!is.function(tree.stats.fn.fun))
+    if (is.function(tree.stats.fn.fun))
       write_tsv(tre.sta, tree.stats.fn.fun(tree.file))
   }
   list(stats=stats, tree.stats=tre.sta)
