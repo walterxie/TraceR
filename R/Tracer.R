@@ -20,6 +20,8 @@
 #' \code{readMCMCLog} reads MCMC log files and return a data frame
 #' whose column names are parameters and row names are the number
 #' of states at each sample.
+#' \code{col_types = cols()} is used to suppress messages from
+#' \code{\link{read_delim}}.
 #'
 #' @param file The file to read/write.
 #' @param samp.col The column to contain the state number of MCMC in the log file.
@@ -33,10 +35,11 @@
 #' mcmc.log <- readMCMCLog("star.beast.log")
 #'
 #' @rdname Tracer
-readMCMCLog <- function(file, delim="\t", comment = "#", samp.col=1, rm.na.col=TRUE, ...) {
+readMCMCLog <- function(file, delim="\t", comment = "#", col_types = cols(),
+                        samp.col=1, rm.na.col=TRUE, ...) {
   require(tidyverse)
   # rm comments #
-  mcmc.log <- read_delim(file, delim, comment = comment, ...)
+  mcmc.log <- read_delim(file, delim, comment = comment, col_types = col_types, ...)
   #double from 2e-308 to 2e+308
   mcmc.log[[samp.col]] = as.double(mcmc.log[[samp.col]])
 

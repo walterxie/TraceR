@@ -38,6 +38,7 @@ You can use the **devtools** *install\_github()* function to install the lastest
 
 ```R
 library("devtools")
+remove.packages("TraceR")
 devtools::install_github("walterxie/TraceR")
 library("TraceR")
 ```
@@ -46,7 +47,7 @@ Or install from `TraceR_*.tar.gz`.
 
 ```R
 setwd("~/WorkSpace/TraceR")
-install.packages("TraceR_0.0.1.tar.gz", repos = NULL, type = "source")
+install.packages("TraceR_?.?.?.tar.gz", repos = NULL, type = "source")
 library("TraceR")
 ```
 
@@ -66,7 +67,7 @@ stats <- analyseTraces(traces)
 ```
 
 [ComMA](https://github.com/walterxie/ComMA) package here only provides plotting functions.  
-It will be replaced by orignal ggplot2 code, and then removed in future development.  
+It will be replaced by original ggplot2 code, and then removed in future.  
 
 ```R
 devtools::install_github("walterxie/ComMA")

@@ -12,6 +12,7 @@ readMCMCLog(
   file,
   delim = "\\t",
   comment = "#",
+  col_types = cols(),
   samp.col = 1,
   rm.na.col = TRUE,
   ...
@@ -69,6 +70,8 @@ and also focus on making batch processing of multiple logs easier.
 \code{readMCMCLog} reads MCMC log files and return a data frame
 whose column names are parameters and row names are the number
 of states at each sample.
+\code{col_types = cols()} is used to suppress messages from
+\code{\link{read_delim}}.
 
 \code{getTraces} preprocesses the data frame returned from
 \code{readMCMCLog} to get the traces.
