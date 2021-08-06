@@ -91,7 +91,8 @@ readTracesTSV <- function(traces.file="sim_0.tsv", ...) {
   require(tidyverse)
   stopifnot(file.exists(traces.file))
   # "trace" col has "mean", ..., "HPD95.lower", "HPD95.upper", "ESS"
-  traces <- try(read_tsv(traces.file, ...))
+  # suppress messages from read_tsv
+  traces <- try(read_tsv(traces.file, col_types = cols(), ...))
   # take ESS row
   ESS <- traces %>% filter(trace == "ESS") %>% select(!trace)
   minESS <- min(ESS %>% as.numeric)

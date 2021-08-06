@@ -2,36 +2,132 @@
 % Please edit documentation in R/CoverageReport.R
 \name{Coverage}
 \alias{Coverage}
-\alias{summariseTracesAndTrees}
+\alias{selectResultByESS}
+\alias{summariseParameters}
+\alias{summariseTrueValues}
 \title{Coverage Report from Model Validation}
 \usage{
-summariseTracesAndTrees(log.file, tree.file = NA, burn.in = 0.1)
+selectResultByESS(
+  i.sta = 0,
+  i.end = 99,
+  prefix = "sim",
+  file.steam.fun = function(prefix, i) {     paste0(prefix, "_", i) },
+  file.postfix = "tsv",
+  tree.file.postfix = "trees.tsv",
+  extra.file.steam.fun = function(f) {     sub("\\\\.tsv$", "", f) },
+  extra.files = c(),
+  extr.tree.files = c()
+)
+
+summariseParameters(
+  selected = list(),
+  params = c("mu", "Theta", "kappa", "psi.treeLength", "psi.height"),
+  stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stderr.of.mean", "ESS")
+)
+
+summariseTrueValues(
+  true.logs,
+  true.trees = NA,
+  lphy.params = c("μ", "Θ"),
+  beast.params = c("mu", "Theta")
+)
 }
 \arguments{
-\item{log.file}{The BEAST log file containing posterior samples.}
+\item{i.sta, i.end}{The start index or end index of batch runs,
+also used in the file names.}
 
-\item{tree.file}{The BEAST tree log file containing posterior trees.
-Default to NA, which will skip to report the tree statistics.}
+\item{prefix}{The prefix of statistics summary files.}
 
-\item{burn.in}{The proportion of samples treated as the burn-in stage
-during MCMC. Default to 0.1.}
+\item{file.steam.fun, extra.file.steam.fun}{The function to extract the file steam,
+which is used as a key to identify the simulation.}
+
+\item{file.postfix, tree.file.postfix}{The extension of statistics summary files.
+This function uses \code{\link{readTracesTSV}},
+The file extension can be different, but the file
+has to be tab-delimited text file.}
+
+\item{extra.files, extr.tree.files}{The extra files used to replace the low ESS results.}
+
+\item{selected}{The list of data frames containing traces summary,
+produced by \code{\link{selectResultByESS}}.}
+
+\item{params}{The vector of parameter names in the BEAST log files.}
+
+\item{stats.name}{The vector of names of statistics. They have to be one of
+names from the 1st column 'trace' in *.tsv file.}
+
+\item{true.logs}{The list of one-line log files containing true values
+from LPhy simulations, where one LPhy log file per simulation.}
+
+\item{true.trees}{The list of one-tree log files containing true trees
+from LPhy simulations, where one LPhy tree file per simulation.}
+
+\item{lphy.params}{The list of}
+
+\item{beast.params}{The list of}
 }
 \description{
-The coverage report of a model validation result.
+The pipeline to generate a coverage report of the model validation.
+
+1. Summarise traces statistics for every simulations (normally starting 110,
+   where 10 extra simulations are used for replacing any low ESS results
+   in the next step), and save each result into a tsv file.
+   Note: if tree stats are logged into BEAST log file,
+   you can set \code{tree.file=NA} to skip creating tree stats tsv file.
+   See \code{\link{summariseTracesAndTrees}}.
+
+2. Select 100 simulations where the ESS of every parameters are guaranteed
+   >= 200. If not, then replace it to the one from the extra 10 sequentially,
+   and check ESS. If all extra 10 are used but there exists any low-ESS simulations,
+   then the pipeline stops and inform to re-run all simulations with longer
+   MCMC chain length. See \code{\link{selectResultByESS}}.
+
+3. Create a final summary file for visualisations.
+   See \code{\link{summariseParameters}} and \code{\link{summariseTrueValues}}.
+
+4. Plot coverage.
 }
 \details{
-\code{summariseTracesAndTrees} creates the statistical summary of
-traces from a BEAST log file and tree statistics from BEAST tree log file,
-and save them into tsv files.
+\code{selectResultByESS} selects 100 simulation results, where the ESS of
+every parameters are guaranteed >= 200.
+The inputs files are produced by \code{\link{summariseTracesAndTrees}}.
+Set \code{tree.file.postfix=NA} and \code{extr.tree.files=c()},
+if it does not require tree stats tsv files.
+
+\code{summariseParameters} creates a final summary file for each given
+parameters.
+
+\code{summariseTrueValues} creates one file to contain all of the true values
+from all LPhy simulations. The generated "true.log" can be used to BEAST 2
+model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
 }
 \examples{
 WD = file.path("~/WorkSpace/MyValidations/")
 setwd(WD)
-log.files = list.files(pattern = ".log")
-for(lg in log.files) {
-  tree.file=paste0(sub('\\\\.log$', '', lg), ".trees")
-  summariseTracesAndTrees(lg, tree.file)
-}
+all.stats = list.files(pattern = "_([0-9]+).tsv")
+all.stats # a char vector
+extra.stats = all.stats[grep("_10([0-9]).tsv", all.stats, ignore.case = T)]
+extra.stats # extra 10 simulations: *_100.tsv ~ *_109.tsv
+
+# skip tree stats
+sele.res <- selectResultByESS(i.sta=0, i.end=99, prefix="sim",
+                              tree.file.postfix=NA,
+                              extra.files = extra.stats)
+low.ess <- sele.res$lowESS
+sele.list <- sele.res$selected
+names(sele.list)
+
+WD = file.path("~/WorkSpace/MyValidations/")
+setwd(WD)
+true.logs = list.files(pattern = "_true.log")
+true.trees = list.files(pattern = "_true_ψ.trees")
+summariseTrueValues()
+
+WD = file.path("~/WorkSpace/MyValidations/")
+setwd(WD)
+true.logs = list.files(pattern = "_true.log")
+true.trees = list.files(pattern = "_true_ψ.trees")
+summariseTrueValues()
 
 }
 \keyword{Coverage}
