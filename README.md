@@ -4,11 +4,16 @@ In development.
 
 ## Not only the subset, but also more
 
-This package is a simplified implementation of [Tracer v1.7](http://beast.community/tracer) in R.  
+This package is initially developed as a simplified implementation 
+of [Tracer v1.7](http://beast.community/tracer) in R.
+It can take an advantage of ggplot2 to create high quality images, 
+and also make batch processing of multiple logs easier.
 
-This package is not only the subset of Tracer, 
-but also aims to provide more visualizations to understand the Bayesian MCMC result, 
-and also to make batch processing of multiple logs easier. 
+Through the development, it is growing to a package that is not only used  
+as a simple version of Tracer, 
+but also aims to provide more post-analysis methods to understand   
+the posterior distribution from the Bayesian phylogenetic inference using MCMC. 
+In addition, coverage tests for a model validation are recently added. 
 
 1. For example, `readState` can extract the summary of operator proposals from 
    [BEAST 2](http://www.beast2.org) `*.state` log file.
@@ -25,8 +30,8 @@ tre.sta.df <- readTrees("data/RSV2long.trees")
 tre.sta <- analyseTreeStats(tre.sta.df)
 ```
 
-3. The [pipeline](examples/Pipeline.R) to generate a coverage report for 
-validating Bayesian phylogenetic models.
+3. The [pipeline](examples/Pipeline.R) to generate a coverage-test report  
+for validating Bayesian phylogenetic models.
 
 
 
@@ -71,8 +76,10 @@ traces <- getTraces(mcmc.log, burn.in=0.1)
 stats <- analyseTraces(traces)
 ```
 
-[ComMA](https://github.com/walterxie/ComMA) package here only provides plotting functions.  
-It will be replaced by original ggplot2 code, and then removed in future.  
+Please note: [ComMA](https://github.com/walterxie/ComMA) package here   
+is only used for plotting. You can use ggplot2 instead.
+ComMA will be replaced by the original ggplot2 code, 
+and then removed from the future dependecy.  
 
 ```R
 devtools::install_github("walterxie/ComMA")
