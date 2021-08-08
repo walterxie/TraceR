@@ -1,4 +1,4 @@
-# Simplified Tracer in R
+# Tracer in R
 
 In development. 
 
@@ -10,20 +10,25 @@ This package is not only the subset of Tracer,
 but also aims to provide more visualizations to understand the Bayesian MCMC result, 
 and also to make batch processing of multiple logs easier. 
 
-For example, `readState` can extract the summary of operator proposals from 
-[BEAST 2](http://www.beast2.org) `*.state` log file.
+1. For example, `readState` can extract the summary of operator proposals from 
+   [BEAST 2](http://www.beast2.org) `*.state` log file.
 
 ```
 readState("data/star.beast.state"")
 ```
 
-Summarising tree statistics from the posterior trees logged by BEAST 2, 
-such as the total branch length, tree height, etc.
+2. Summarising tree statistics from the posterior trees logged by BEAST 2, 
+   such as the total branch length, tree height, etc.
 
 ```
 tre.sta.df <- readTrees("data/RSV2long.trees")
 tre.sta <- analyseTreeStats(tre.sta.df)
 ```
+
+3. The [pipeline](examples/Pipeline.R) to generate a coverage report for 
+validating Bayesian phylogenetic models.
+
+
 
 ## Citation
 
