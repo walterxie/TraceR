@@ -22,15 +22,15 @@ selectResultByESS(
 summariseParameters(
   selected = list(),
   params = c("mu", "Theta", "psi.treeLength", "psi.height"),
-  stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stderr.of.mean", "ESS"),
+  stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stdev", "ESS"),
   output.file.fun = function(x) {     paste0(x, ".tsv") }
 )
 
 summariseTrueValues(
-  true.logs,
-  true.trees = NA,
-  lphy.params = c("μ", "Θ"),
-  beast.params = c("mu", "Theta")
+  selected = list(),
+  log.file.fun = function(x) {     paste0(x, "_true.log") },
+  tree.file.fun = function(x) {     paste0(x, "_true_ψ.trees") },
+  params = c("μ", "Θ")
 )
 }
 \arguments{
@@ -52,7 +52,7 @@ has to be tab-delimited text file.}
 \item{selected}{The list of data frames containing traces summary,
 produced by \code{\link{selectResultByESS}}.}
 
-\item{params}{The vector of parameter names in the BEAST log files.}
+\item{params}{The vector of parameter names in LPhy.}
 
 \item{stats.name}{The vector of names of statistics. They have to be one of
 names from the 1st column 'trace' in *.tsv file.}
@@ -61,15 +61,15 @@ names from the 1st column 'trace' in *.tsv file.}
 from the given parameters in the BEAST log.
 Set to NA, if you do not want to create the files.}
 
-\item{true.logs}{The list of one-line log files containing true values
-from LPhy simulations, where one LPhy log file per simulation.}
+\item{log.file.fun}{The function to create one-line log file name,
+containing true values from LPhy simulations,
+where one LPhy log file per simulation.}
 
-\item{true.trees}{The list of one-tree log files containing true trees
-from LPhy simulations, where one LPhy tree file per simulation.}
-
-\item{lphy.params}{The list of}
-
-\item{beast.params}{The list of}
+\item{tree.file.fun}{The function to create one-tree log file name,
+containing true trees from LPhy simulations,
+where one LPhy tree file per simulation.
+Set to NA, if tree stats (e.g total branch length,
+root height) is not required.}
 }
 \description{
 The pipeline to generate a coverage report of the model validation.
@@ -106,9 +106,9 @@ if it does not require tree stats tsv files.
 \code{summariseParameters} creates a final summary file for each given
 parameters.
 
-\code{summariseTrueValues} creates one file to contain all of the true values
-from all LPhy simulations. The generated "true.log" can be used to BEAST 2
-model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
+\code{summariseTrueValues} return a data frame to contain all of the true values
+from all LPhy simulations. LPhy does not log tree stats as a parameter,
+but they can be computed from the true tree.
 }
 \examples{
 WD = file.path("~/WorkSpace/MyValidations/")
@@ -130,11 +130,12 @@ summariseParameters(sele.list,
            params = c("mu","Theta", "r_0", "r_1", "r_3",
                       "psi.treeLength", "psi.height"))
 
-WD = file.path("~/WorkSpace/MyValidations/")
-setwd(WD)
-true.logs = list.files(pattern = "_true.log")
-true.trees = list.files(pattern = "_true_ψ.trees")
-summariseTrueValues()
+# list.files(pattern = "_true.log")
+# list.files(pattern = "_true_ψ.trees")
+df.tru <- summariseTrueValues(sele.list, params=c("μ","Θ"),
+                    tre.params = c("total.br.len","tree.height"))
+getwd()
+write_tsv(df.tru, "trueValue.tsv")
 
 }
 \keyword{Coverage}

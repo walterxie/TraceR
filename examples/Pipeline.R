@@ -31,3 +31,11 @@ summ <- summariseParameters(sele.list, params = c("mu","Theta", "r_0", "r_1",
 cat("min ESS = ", paste(summ$minESS, collapse = ", "), "\n")
 cat("min of min ESS = ", min(summ$minESS), "\n")
 
+# list.files(pattern = "_true.log")
+# list.files(pattern = "_true_ψ.trees")
+df.tru <- summariseTrueValues(sele.list, params=c("μ","Θ", "r_0", "r_1"),
+                     tre.params = c("total.br.len","tree.height"))
+getwd()
+write_tsv(df.tru, "trueValue.tsv")
+
+

@@ -215,10 +215,11 @@ pullAnthorFromExtra <- function(curr.idx,
 #' @rdname Coverage
 summariseParameters <- function(selected=list(),
           params = c("mu","Theta", "psi.treeLength", "psi.height"),
-          stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stderr.of.mean", "ESS"),
+          stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stdev", "ESS"),
           output.file.fun=function(x){ paste0(x, ".tsv") }) {
   require(tidyverse)
-  cat("Select ", length(selected)," simulations : ", paste(names(selected), collapse = ", "), ".\n")
+  cat("\nSelect ", length(selected)," simulations : ", paste(names(selected), collapse = ", "), ".\n")
+  cat("Summarise BEAST parameters : ", paste(params, collapse = ", "), ".\n")
 
   minESS <- c()
   summary <- list()
@@ -257,44 +258,112 @@ summariseParameters <- function(selected=list(),
 }
 
 #' @details
-#' \code{summariseTrueValues} creates one file to contain all of the true values
-#' from all LPhy simulations. The generated "true.log" can be used to BEAST 2
-#' model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
+#' \code{summariseTrueValues} return a data frame to contain all of the true values
+#' from all LPhy simulations. LPhy does not log tree stats as a parameter,
+#' but they can be computed from the true tree.
 #'
-#'
-#'
-#' @param true.logs The list of one-line log files containing true values
-#'                  from LPhy simulations, where one LPhy log file per simulation.
-#' @param true.trees  The list of one-tree log files containing true trees
-#'                    from LPhy simulations, where one LPhy tree file per simulation.
-#' @param lphy.params  The list of
-#' @param beast.params The list of
+#' @param log.file.fun  The function to create one-line log file name,
+#'                      containing true values from LPhy simulations,
+#'                      where one LPhy log file per simulation.
+#' @param tree.file.fun The function to create one-tree log file name,
+#'                      containing true trees from LPhy simulations,
+#'                      where one LPhy tree file per simulation.
+#'                      Set to NA, if tree stats (e.g total branch length,
+#'                      root height) is not required.
+#' @param params  The vector of parameter names in LPhy.
 #' @keywords Coverage
-
+#' @export
 #' @examples
-#' WD = file.path("~/WorkSpace/MyValidations/")
-#' setwd(WD)
-#' true.logs = list.files(pattern = "_true.log")
-#' true.trees = list.files(pattern = "_true_ψ.trees")
-#' summariseTrueValues()
+#' # list.files(pattern = "_true.log")
+#' # list.files(pattern = "_true_ψ.trees")
+#' df.tru <- summariseTrueValues(sele.list, params=c("μ","Θ"),
+#'                     tre.params = c("total.br.len","tree.height"))
+#' getwd()
+#' write_tsv(df.tru, "trueValue.tsv")
 #'
 #' @rdname Coverage
-summariseTrueValues <- function(true.logs, true.trees=NA,
-                                lphy.params=c("μ","Θ"),
-                                beast.params=c("mu","Theta") ) {
+summariseTrueValues <- function(selected=list(),
+                                log.file.fun=function(x){ paste0(x,"_true.log") },
+                                tree.file.fun=function(x){ paste0(x,"_true_ψ.trees") },
+                                params=c("μ","Θ") ) {
+  require(tidyverse)
+  df.tru <- tibble(parameter = params)
+
+  if (!anyNA(true.trees)) {
+    require(ape)
+    require(phytools)
+    # add 2 tree stats
+    df.tru <- tibble(parameter = c(params, "total.br.len","tree.height"))
+  }
+  cat("\nSelect ", length(selected)," true-value files : ", paste(names(selected), collapse = ", "), ".\n")
+  cat("Summarise LPhy parameters : ", paste(params, collapse = ", "), ".\n")
+
+  # true values from a file
+  tru <- NULL
+  # selected is a list of file steams
+  for(lg in selected) {
+    lg.fi <- log.file.fun(lg)
+    cat("Load ", lg.fi, "...\n")
+    stopifnot(file.exists(lg.fi))
+
+    # must 1 line
+    tru <- read_tsv(lg.fi) %>% select(params) %>% unlist # need vector here
+
+    if (is.function(tree.file.fun)) {
+      # add tree stats
+      tre.fi <- tree.file.fun(lg)
+      stopifnot(file.exists(tre.fi))
+
+      tru.tre <- read.nexus(tre.fi)
+      cat("Load true tree from", tre.fi, "having", Ntip(tru.tre), "tips ...\n")
+
+      # total branch len and tree height
+      tru <- c(tru, sum(tru.tre$edge.length), max(nodeHeights(tru.tre)))
+    }
+
+    df.tru <- try(df.tru %>% add_column(!!(lg) := tru))
+  }
+  return(df.tru)
+}
+
+# posterior File must have:
+# mean HPD95.lower HPD95.upper   ESS
+reportCoverage <- function(posteriorFile="mu.tsv", trueValsFile="trueValue.tsv", tru.val.par="μ") {
   require(tidyverse)
 
-  params = c("mu","Theta", "r_0", "r_1", "r_2",
-             "kappa.1", "kappa.2", "kappa.3",
-             "pi_0.A", "pi_0.C", "pi_0.G", "pi_0.T",
-             "pi_1.A", "pi_1.C", "pi_1.G", "pi_1.T",
-             "pi_2.A", "pi_2.C", "pi_2.G", "pi_2.T" )#,"psi.height")
-  tre.params = c("total.br.len","tree.height")
-  stats.name = c("mean", "HPD95.lower", "HPD95.upper", "ESS")
-  # must have the same order of param
-  params2 = c("μ","Θ","r_0","r_1","r_2","κ_0","κ_1","κ_2","π_0_0","π_0_1","π_0_2","π_0_3",
-              "π_1_0","π_1_1","π_1_2","π_1_3","π_2_0","π_2_1","π_2_2","π_2_3")
+  cat("Load posterior ", posteriorFile, "...\n")
+  trueVals <- try(read_tsv(trueValsFile))
+  param <- try(read_tsv(posteriorFile))
+  #stopifnot( all(colnames(trueVals)[2:ncol(trueVals)] == colnames(param)[2:ncol(param)]) )
 
+  cat("Grep true value of ", tru.val.par, "...\n")
+  # tru.val.par="μ"
+  param <- param %>% rbind(trueVals %>% filter(grepl(!!tru.val.par, parameter, fixed = T)) %>% unlist)
+  statNames <- param %>% select(trace) %>% unlist
+  # replace to "true.val"
+  statNames[length(statNames)] <- "true.val"
+
+  anal <- param %>% select(!trace) %>% rownames_to_column %>%
+    gather(analysis, value, -rowname) %>% spread(rowname, value) %>%
+    mutate_at(2:ncol(.), as.numeric)
+  colnames(anal)[2:ncol(anal)] <- statNames
+
+  # sort by true value
+  anal <- anal %>% arrange(true.val) %>%
+    # for colouring
+    mutate(is.in = (true.val >= HPD95.lower & true.val <= HPD95.upper) ) %>%
+    mutate(analysis = fct_reorder(analysis, true.val))
+  # analysis    mean HPD95.lower HPD95.upper   ESS    true
+  print(anal, n = 5)
+  return(anal)
 }
+
+
+
+# The generated "true.log" can be used to BEAST 2
+# model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
+#TODO
+
+
 
 
