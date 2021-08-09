@@ -326,6 +326,7 @@ summariseTrueValues <- function(selected=list(),
   return(df.tru)
 }
 
+# map to beast params
 # posterior File must have:
 # mean HPD95.lower HPD95.upper   ESS
 reportCoverage <- function(posteriorFile="mu.tsv", trueValsFile="trueValue.tsv", tru.val.par="μ") {
