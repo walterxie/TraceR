@@ -135,7 +135,7 @@ selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
 # add tree stats DF (cols) into traces DF
 addTreeStats <- function(tree.stats.file="sim_0.trees.tsv", traces) {
   # add tree stats
-  tre.sta <- try(read_tsv(tre.sta.fi)) %>% select(!trace)
+  tre.sta <- try(read_tsv(tre.sta.fi, col_types = cols())) %>% select(!trace)
   # they should have the same rows as stats file
   if (! all(traces$trace == tre.sta$trace) )
     stop("Trace stats ", nrow(traces), " should contain the same stats in 'trace' column ",
@@ -208,9 +208,8 @@ pullAnthorFromExtra <- function(curr.idx,
 #' @keywords Coverage
 #' @export
 #' @examples
-#' summariseParameters(sele.list,
-#'            params = c("mu","Theta", "r_0", "r_1", "r_3",
-#'                       "psi.treeLength", "psi.height"))
+#' summ <- summariseParameters(sele.list,
+#'            params = c("mu","Theta", "psi.treeLength", "psi.height"))
 #'
 #' @rdname Coverage
 summariseParameters <- function(selected=list(),
@@ -258,16 +257,25 @@ summariseParameters <- function(selected=list(),
 }
 
 #' @details
-#' \code{summariseTrueValues} return a data frame to contain all of the true values
-#' from all LPhy simulations. LPhy does not log tree stats as a parameter,
+#' \code{summariseTrueValues} return a data frame to contain all of
+#' the true values from all LPhy simulations.
+#' LPhy does not log tree stats as a parameter,
 #' but they can be computed from the true tree.
 #'
-#' @param log.file.fun  The function to create one-line log file name,
+#' The returned data frame for "true values" uses the same format of BEAST 2
+#' model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
+#'
+#' @param selected.fn.steam The vector of file name steams selected
+#'                          by \code{selectResultByESS} to summarise
+#'                          the coverage.
+#' @param log.file.fun  The function to get one-line log file name,
 #'                      containing true values from LPhy simulations,
 #'                      where one LPhy log file per simulation.
-#' @param tree.file.fun The function to create one-tree log file name,
+#' @param tree.file.fun The function to get one-tree log file name,
 #'                      containing true trees from LPhy simulations,
 #'                      where one LPhy tree file per simulation.
+#'                      The tree stats are fixed to "total.br.len" (total branch length)
+#'                      and "tree.height" at the moment.
 #'                      Set to NA, if tree stats (e.g total branch length,
 #'                      root height) is not required.
 #' @param params  The vector of parameter names in LPhy.
@@ -275,14 +283,12 @@ summariseParameters <- function(selected=list(),
 #' @export
 #' @examples
 #' # list.files(pattern = "_true.log")
-#' # list.files(pattern = "_true_ψ.trees")
-#' df.tru <- summariseTrueValues(sele.list, params=c("μ","Θ"),
-#'                     tre.params = c("total.br.len","tree.height"))
+#' df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"))
 #' getwd()
 #' write_tsv(df.tru, "trueValue.tsv")
 #'
 #' @rdname Coverage
-summariseTrueValues <- function(selected=list(),
+summariseTrueValues <- function(selected.fn.steam=c(),
                                 log.file.fun=function(x){ paste0(x,"_true.log") },
                                 tree.file.fun=function(x){ paste0(x,"_true_ψ.trees") },
                                 params=c("μ","Θ") ) {
@@ -295,19 +301,20 @@ summariseTrueValues <- function(selected=list(),
     # add 2 tree stats
     df.tru <- tibble(parameter = c(params, "total.br.len","tree.height"))
   }
-  cat("\nSelect ", length(selected)," true-value files : ", paste(names(selected), collapse = ", "), ".\n")
+  cat("\nSelect ", length(selected.fn.steam)," true-value files : ",
+      paste(selected.fn.steam, collapse = ", "), ".\n")
   cat("Summarise LPhy parameters : ", paste(params, collapse = ", "), ".\n")
 
   # true values from a file
   tru <- NULL
   # selected is a list of file steams
-  for(lg in selected) {
+  for(lg in selected.fn.steam) {
     lg.fi <- log.file.fun(lg)
     cat("Load ", lg.fi, "...\n")
     stopifnot(file.exists(lg.fi))
 
     # must 1 line
-    tru <- read_tsv(lg.fi) %>% select(params) %>% unlist # need vector here
+    tru <- read_tsv(lg.fi, col_types = cols()) %>% select(params) %>% unlist # need vector here
 
     if (is.function(tree.file.fun)) {
       # add tree stats
@@ -315,7 +322,7 @@ summariseTrueValues <- function(selected=list(),
       stopifnot(file.exists(tre.fi))
 
       tru.tre <- read.nexus(tre.fi)
-      cat("Load true tree from", tre.fi, "having", Ntip(tru.tre), "tips ...\n")
+      cat("Load ", tre.fi, "having", Ntip(tru.tre), "tips ...\n")
 
       # total branch len and tree height
       tru <- c(tru, sum(tru.tre$edge.length), max(nodeHeights(tru.tre)))
@@ -323,7 +330,13 @@ summariseTrueValues <- function(selected=list(),
 
     df.tru <- try(df.tru %>% add_column(!!(lg) := tru))
   }
-  return(df.tru)
+  stopifnot("parameter" %in% names(df.tru))
+  # keep 'parameter' in previous order
+  df.tru <- df.tru %>% mutate(parameter = factor(parameter, levels = unique(parameter)))
+  return( df.tru %>% # start rotating
+            gather(key = simulation, value = value, -parameter) %>%
+            group_by(parameter) %>% # keep 'parameter' in previous order
+            spread(key = parameter, value = value) )
 }
 
 # map to beast params
@@ -333,8 +346,8 @@ reportCoverage <- function(posteriorFile="mu.tsv", trueValsFile="trueValue.tsv",
   require(tidyverse)
 
   cat("Load posterior ", posteriorFile, "...\n")
-  trueVals <- try(read_tsv(trueValsFile))
-  param <- try(read_tsv(posteriorFile))
+  trueVals <- try(read_tsv(trueValsFile, col_types = cols()))
+  param <- try(read_tsv(posteriorFile, col_types = cols()))
   #stopifnot( all(colnames(trueVals)[2:ncol(trueVals)] == colnames(param)[2:ncol(param)]) )
 
   cat("Grep true value of ", tru.val.par, "...\n")
@@ -361,9 +374,6 @@ reportCoverage <- function(posteriorFile="mu.tsv", trueValsFile="trueValue.tsv",
 
 
 
-# The generated "true.log" can be used to BEAST 2
-# model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
-#TODO
 
 
 

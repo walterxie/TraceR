@@ -27,7 +27,7 @@ summariseParameters(
 )
 
 summariseTrueValues(
-  selected = list(),
+  selected.fn.steam = c(),
   log.file.fun = function(x) {     paste0(x, "_true.log") },
   tree.file.fun = function(x) {     paste0(x, "_true_ψ.trees") },
   params = c("μ", "Θ")
@@ -61,13 +61,19 @@ names from the 1st column 'trace' in *.tsv file.}
 from the given parameters in the BEAST log.
 Set to NA, if you do not want to create the files.}
 
-\item{log.file.fun}{The function to create one-line log file name,
+\item{selected.fn.steam}{The vector of file name steams selected
+by \code{selectResultByESS} to summarise
+the coverage.}
+
+\item{log.file.fun}{The function to get one-line log file name,
 containing true values from LPhy simulations,
 where one LPhy log file per simulation.}
 
-\item{tree.file.fun}{The function to create one-tree log file name,
+\item{tree.file.fun}{The function to get one-tree log file name,
 containing true trees from LPhy simulations,
 where one LPhy tree file per simulation.
+The tree stats are fixed to "total.br.len" (total branch length)
+and "tree.height" at the moment.
 Set to NA, if tree stats (e.g total branch length,
 root height) is not required.}
 }
@@ -106,9 +112,13 @@ if it does not require tree stats tsv files.
 \code{summariseParameters} creates a final summary file for each given
 parameters.
 
-\code{summariseTrueValues} return a data frame to contain all of the true values
-from all LPhy simulations. LPhy does not log tree stats as a parameter,
+\code{summariseTrueValues} return a data frame to contain all of
+the true values from all LPhy simulations.
+LPhy does not log tree stats as a parameter,
 but they can be computed from the true tree.
+
+The returned data frame for "true values" uses the same format of BEAST 2
+model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
 }
 \examples{
 WD = file.path("~/WorkSpace/MyValidations/")
@@ -126,14 +136,11 @@ low.ess <- sele.res$lowESS
 sele.list <- sele.res$selected
 names(sele.list)
 
-summariseParameters(sele.list,
-           params = c("mu","Theta", "r_0", "r_1", "r_3",
-                      "psi.treeLength", "psi.height"))
+summ <- summariseParameters(sele.list,
+           params = c("mu","Theta", "psi.treeLength", "psi.height"))
 
 # list.files(pattern = "_true.log")
-# list.files(pattern = "_true_ψ.trees")
-df.tru <- summariseTrueValues(sele.list, params=c("μ","Θ"),
-                    tre.params = c("total.br.len","tree.height"))
+df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"))
 getwd()
 write_tsv(df.tru, "trueValue.tsv")
 

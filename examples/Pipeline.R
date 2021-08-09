@@ -40,7 +40,8 @@ read_tsv("al2_0_true.log") %>% names
 # list.files(pattern = "_true_ψ.trees")
 
 # the order of parameters same to BEAST parameters
-df.tru <- summariseTrueValues(sele.list, params=c("μ","Θ", "r_0", "r_1", "r_2"))
+df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ", "r_0", "r_1", "r_2"))
+df.tru
 getwd()
 write_tsv(df.tru, "trueValue.tsv")
 
