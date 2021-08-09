@@ -10,6 +10,9 @@ ggCoverage(
   cov.per = -1,
   transp = 0.3,
   x.lab = "",
+  y.lab = "Mean posterior",
+  x.txt = NA,
+  y.txt = NA,
   x.max.lim = NA,
   y.max.lim = NA,
   x.txt.just = 0
@@ -25,7 +28,12 @@ of the posterior.}
 
 \item{transp}{The transparency level of 95% HPD bar, default to 0.3.}
 
-\item{x.lab}{The label of x-axis, which should be "True ? value".}
+\item{x.lab, y.lab}{The label of x-axis or y-axis".}
+
+\item{x.txt, y.txt}{The position of "covg. =" in the figure.
+Default to NA, which will be automatically assigned
+by minimum and maximum values. They are only used
+for log scale.}
 
 \item{x.max.lim, y.max.lim}{The maximum value in the axis,
 which can be used to adjust the x and y to the same scale.

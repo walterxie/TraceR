@@ -24,11 +24,15 @@
 #' @param cov.per The percentage of coverage, which indicates how frequent
 #'                the "true" values are falling into the 95% HPD interval
 #'                of the posterior.
-#' @param x.lab   The label of x-axis, which should be "True ? value".
 #' @param transp  The transparency level of 95% HPD bar, default to 0.3.
+#' @param x.lab,y.lab   The label of x-axis or y-axis".
 #' @param x.max.lim,y.max.lim The maximum value in the axis,
 #'                which can be used to adjust the x and y to the same scale.
 #'                Default to NA.
+#' @param x.txt,y.txt The position of "covg. =" in the figure.
+#'                    Default to NA, which will be automatically assigned
+#'                    by minimum and maximum values. They are only used
+#'                    for log scale.
 #' @param x.txt.just Where the text "covg. =" starts, default to 0.
 #' @keywords Tracer
 #' @export
@@ -45,8 +49,8 @@
 #' ggsave(paste0(param, "-sub-",nrow(df.sub),".pdf"), p, width = 4, height = 3)
 #'
 #' @rdname CovgGraph
-ggCoverage <- function(df, cov.per=-1, transp = 0.3, x.lab="",
-                            x.max.lim=NA, y.max.lim=NA, x.txt.just=0) {
+ggCoverage <- function(df, cov.per=-1, transp = 0.3, x.lab="", y.lab="Mean posterior",
+                       x.txt=NA, y.txt=NA, x.max.lim=NA, y.max.lim=NA, x.txt.just=0) {
   require("ggplot2")
 
   # colnames must have: "analysis mean HPD95.lower HPD95.upper ESS true.val is.in"
@@ -55,8 +59,8 @@ ggCoverage <- function(df, cov.per=-1, transp = 0.3, x.lab="",
   if (cov.per < 0)
     cov.per = round(nrow(subset(df, is.in==TRUE)) / nrow(df) * 100)
 
-  x.txt = min(df$true.val)
-  y.txt = max(df$HPD95.upper)
+  if (is.na(x.txt)) x.txt = min(df$true.val)
+  if (is.na(y.txt)) y.txt = max(df$HPD95.upper)
   if (is.na(x.txt.just)) x.txt.just = max(df$HPD95.upper) * 0.1
 
   p <- ggplot(data=df, aes(x=true.val, y=mean, group = is.in, colour = is.in)) +
@@ -65,7 +69,7 @@ ggCoverage <- function(df, cov.per=-1, transp = 0.3, x.lab="",
     geom_abline(intercept = 0, slope = 1, color="black", linetype="dotted", size=.2) +
     annotate("text", x=x.txt, y=y.txt, label= paste("covg. =", cov.per, "%"),
              hjust = x.txt.just, size = 5) +
-    xlab(x.lab) + ylab("Mean posterior") +
+    xlab(x.lab) + ylab(y.lab) +
     guides(colour=FALSE) + theme_classic() + theme(text = element_text(size=15))
 
   # same scale in x and y
