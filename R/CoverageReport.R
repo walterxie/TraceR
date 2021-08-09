@@ -289,7 +289,7 @@ summariseTrueValues <- function(selected=list(),
   require(tidyverse)
   df.tru <- tibble(parameter = params)
 
-  if (!anyNA(true.trees)) {
+  if (is.function(tree.file.fun)) {
     require(ape)
     require(phytools)
     # add 2 tree stats
