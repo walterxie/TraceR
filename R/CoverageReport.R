@@ -351,9 +351,9 @@ summariseTrueValues <- function(selected.fn.steam=c(),
 }
 
 #' @details
-#' \code{reportCoverage} produces a data frame as the report for
-#' the selected simulations to measure how many true values are falling into
-#' or outside the 95% HPD interval in the sampled posterior.
+#' \code{markInOut} produces a data frame for the selected simulations
+#' to measure how many true values are falling into or outside
+#' the 95% HPD interval in the sampled posterior.
 #'
 #' Note: the same parameter may be given different names between LPhy script
 #' and BEAST XML/log, please ensure that you match them correctly.
