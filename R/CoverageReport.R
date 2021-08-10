@@ -285,16 +285,17 @@ summariseParameters <- function(selected=list(),
 #' @param tree.file.fun The function to get one-tree log file name,
 #'                      containing true trees from LPhy simulations,
 #'                      where one LPhy tree file per simulation.
-#'                      The tree stats are fixed to "total.br.len" (total branch length)
-#'                      and "tree.height" at the moment.
-#'                      Set to NA, if tree stats (e.g total branch length,
-#'                      root height) is not required.
+#' @param add.tree.stats Default to TRUE, to summarise true tree stats
+#'                       which are fixed to "total.br.len" (total branch length)
+#'                       and "tree.height" at the moment.
+#'                       Set to False, if tree stats is not required
+#'                       in the data frame.
 #' @param params  The vector of parameter names in LPhy.
 #' @keywords Coverage
 #' @export
 #' @examples
 #' # list.files(pattern = "_true.log")
-#' df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"))
+#' df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"), add.tree.stats=TRUE)
 #' getwd()
 #' write_tsv(df.tru, "trueValue.tsv")
 #'
@@ -302,7 +303,7 @@ summariseParameters <- function(selected=list(),
 summariseTrueValues <- function(selected.fn.steam=c(),
                                 log.file.fun=function(x){ paste0(x,"_true.log") },
                                 tree.file.fun=function(x){ paste0(x,"_true_ψ.trees") },
-                                params=c("μ","Θ") ) {
+                                params=c("μ","Θ"), add.tree.stats=TRUE) {
   require(tidyverse)
   df.tru <- tibble(parameter = params)
 
@@ -327,7 +328,7 @@ summariseTrueValues <- function(selected.fn.steam=c(),
     # must 1 line
     tru <- read_tsv(lg.fi, col_types = cols()) %>% select(params) %>% unlist # need vector here
 
-    if (is.function(tree.file.fun)) {
+    if (add.tree.stats && is.function(tree.file.fun)) {
       # add tree stats
       tre.fi <- tree.file.fun(lg)
       stopifnot(file.exists(tre.fi))
@@ -410,10 +411,6 @@ markInOut <- function(df.posterior, df.tru.val, tru.val.par="μ",
   print(covg, n = 5)
   return(covg)
 }
-
-
-
-
 
 
 

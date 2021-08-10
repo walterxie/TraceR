@@ -38,13 +38,18 @@
 #' @export
 #' @examples
 #' param = "mu"
-#' df <- createAnalysisDF(tru.val.par="μ", posteriorFile="mu.tsv")
-#' p <- ggCoverage(df, x.lab=paste("True",param,"value"))
-#' ggsave(paste0(param, "-all.pdf"), p, width = 4, height = 3)
+#' df.pos <- read_tsv(paste0(param, ".tsv"))
+#' df.tru <- read_tsv("trueValue.tsv")
+#' inOut <- markInOut(df.pos, df.tru, tru.val.par="μ")
+#' # coverage
+#' cov <- nrow(subset(inOut, is.in==TRUE)) / nrow(inOut)
+#' p <- ggCoverage(inOut, x.lab=paste("True",param,"value"))
+#' ggsave(paste0(param, ".pdf"), p, width = 4, height = 3)
 #'
-#' cov.per <- round(nrow(subset(df, is.in==TRUE)) / nrow(df) * 100)
-#' df.sub <- df %>% filter(mean < 0.045)
+#' # zoom in
+#' df.sub <- inOut %>% filter(mean < 0.045)
 #' nrow(df.sub)
+#' cov.per <- round(cov * 100)
 #' p <- ggCoverage(df.sub, cov.per, x.lab=paste("True",param,"value"))
 #' ggsave(paste0(param, "-sub-",nrow(df.sub),".pdf"), p, width = 4, height = 3)
 #'

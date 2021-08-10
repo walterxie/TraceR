@@ -31,7 +31,8 @@ summariseTrueValues(
   selected.fn.steam = c(),
   log.file.fun = function(x) {     paste0(x, "_true.log") },
   tree.file.fun = function(x) {     paste0(x, "_true_ψ.trees") },
-  params = c("μ", "Θ")
+  params = c("μ", "Θ"),
+  add.tree.stats = TRUE
 )
 
 markInOut(
@@ -81,11 +82,13 @@ where one LPhy log file per simulation.}
 
 \item{tree.file.fun}{The function to get one-tree log file name,
 containing true trees from LPhy simulations,
-where one LPhy tree file per simulation.
-The tree stats are fixed to "total.br.len" (total branch length)
+where one LPhy tree file per simulation.}
+
+\item{add.tree.stats}{Default to TRUE, to summarise true tree stats
+which are fixed to "total.br.len" (total branch length)
 and "tree.height" at the moment.
-Set to NA, if tree stats (e.g total branch length,
-root height) is not required.}
+Set to False, if tree stats is not required
+in the data frame.}
 
 \item{df.posterior}{The data frame containing the final stats summary of
 the posterior of the selected parameter.}
@@ -144,9 +147,9 @@ but they can be computed from the true tree.
 The returned data frame for "true values" uses the same format of BEAST 2
 model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
 
-\code{reportCoverage} produces a data frame as the report for
-the selected simulations to measure how many true values are falling into
-or outside the 95% HPD interval in the sampled posterior.
+\code{markInOut} produces a data frame for the selected simulations
+to measure how many true values are falling into or outside
+the 95% HPD interval in the sampled posterior.
 
 Note: the same parameter may be given different names between LPhy script
 and BEAST XML/log, please ensure that you match them correctly.
@@ -172,7 +175,7 @@ summ <- summariseParameters(sele.list,
 min(summ$minESS)
 
 # list.files(pattern = "_true.log")
-df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"))
+df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"), add.tree.stats=TRUE)
 getwd()
 write_tsv(df.tru, "trueValue.tsv")
 

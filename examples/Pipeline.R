@@ -27,8 +27,9 @@ sele.list <- sele.res$selected
 sele.list[[1]]
 names(sele.list)
 
-summ <- summariseParameters(sele.list, params = c("mu","Theta", "r_0", "r_1", "r_2",
-                                                  "psi.treeLength", "psi.height"))
+summ <- summariseParameters(sele.list,
+                            params = c("mu","Theta", "r_0", "r_1", "r_2",
+                                       "psi.treeLength", "psi.height"))
 
 cat("min ESS = ", paste(summ$minESS, collapse = ", "), "\n")
 cat("min of min ESS = ", min(summ$minESS), "\n")
@@ -40,7 +41,9 @@ read_tsv("al2_0_true.log") %>% names
 # list.files(pattern = "_true_ψ.trees")
 
 # the order of parameters same to BEAST parameters
-df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ", "r_0", "r_1", "r_2"))
+df.tru <- summariseTrueValues(names(sele.list),
+                              params=c("μ","Θ", "r_0", "r_1", "r_2"),
+                              add.tree.stats=TRUE)
 df.tru
 getwd()
 write_tsv(df.tru, "trueValue.tsv")
@@ -51,4 +54,10 @@ inOut <- markInOut(df.pos, df.tru, tru.val.par="μ")
 write_tsv(inOut, "mu-coverage.tsv")
 
 nrow(inOut[inOut$is.in==T,])/nrow(inOut)
+
+p <- ggCoverage(inOut, x.lab="True mu value")
+p
+# ggsave("mu.pdf", p, width = 4, height = 3)
+
+
 
