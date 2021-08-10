@@ -194,8 +194,10 @@ pullAnthorFromExtra <- function(curr.idx,
 ### end of private functions
 
 #' @details
-#' \code{summariseParameters} creates a final summary file for each given
-#' parameters.
+#' \code{summariseParameters} creates a file for each given parameters
+#' storing the final stats summary of the posterior.
+#' It also returns a list of data frame containing a parameter stats summary in each,
+#' where rows are simulations and columns are statistics.
 #'
 #' @param selected   The list of data frames containing traces summary,
 #'                   produced by \code{\link{selectResultByESS}}.
@@ -210,6 +212,7 @@ pullAnthorFromExtra <- function(curr.idx,
 #' @examples
 #' summ <- summariseParameters(sele.list,
 #'            params = c("mu","Theta", "psi.treeLength", "psi.height"))
+#' min(summ$minESS)
 #'
 #' @rdname Coverage
 summariseParameters <- function(selected=list(),
@@ -221,7 +224,7 @@ summariseParameters <- function(selected=list(),
   cat("Summarise BEAST parameters : ", paste(params, collapse = ", "), ".\n")
 
   minESS <- c()
-  summary <- list()
+  param.summaries <- list()
   for (pa in params) {
     cat("Analyse parameter : ", pa, "...\n")
     df <- tibble(trace=stats.name)
@@ -243,17 +246,25 @@ summariseParameters <- function(selected=list(),
     tmp.minESS <- min(ESS %>% as.numeric)
     cat(pa, " min ESS = ", tmp.minESS, "\n")
 
+    stopifnot("trace" %in% names(df))
+    # keep 'trace' in previous order
+    df <- df %>% mutate(trace = factor(trace, levels = unique(trace))) %>%
+      # rotate df to make rows be simulations, cols are stats
+      gather(key = simulation, value = value, -trace) %>%
+      group_by(trace) %>% # keep 'trace' in previous order
+      spread(key = trace, value = value)
+    # save to list
+    param.summaries[[pa]] <- df
+
     if (!is.na(tmp.minESS) && tmp.minESS >= 200) {
       if (is.function(output.file.fun))
         write_tsv(df, paste0(pa, ".tsv"))
     } else
       warning("Summary not generated ! ", pa, " min ESS = ", tmp.minESS, "\n")
-
     minESS <- c(minESS, tmp.minESS)
-    summary[[pa]] <- df
   }
 
-  list(summary=summary,minESS=minESS)
+  list(param.summaries=param.summaries, minESS=minESS)
 }
 
 #' @details
@@ -339,37 +350,50 @@ summariseTrueValues <- function(selected.fn.steam=c(),
             spread(key = parameter, value = value) )
 }
 
-# map to beast params
-# posterior File must have:
-# mean HPD95.lower HPD95.upper   ESS
-reportCoverage <- function(posteriorFile="mu.tsv", trueValsFile="trueValue.tsv", tru.val.par="μ") {
+#' @details
+#' \code{reportCoverage} produces a data frame as the report for
+#' the selected simulations to measure how many true values are falling into
+#' or outside the 95% HPD interval in the sampled posterior.
+#'
+#' Note: the same parameter may be given different names between LPhy script
+#' and BEAST XML/log, please ensure that you match them correctly.
+#'
+#' @param df.posterior The data frame containing the final stats summary of
+#'                     the posterior of the selected parameter.
+#' @param df.tru.val   The data frame containing all of the true values
+#'                     from all LPhy simulations. Created by \code{summariseTrueValues}
+#' @param tru.val.par  The parameter name in LPhy script, which may be different
+#'                     to one in the BEAST log.
+#' @param sim.coln     The default column name as the key both in
+#'                     \code{df.posterior} and \code{df.tru.val}.
+#' @keywords Coverage
+#' @export
+#' @examples
+#' # df.pos <- read_tsv("mu.tsv")
+#' # df.tru <- read_tsv("trueValue.tsv")
+#' covg <- reportCoverage(df.pos, df.tru, tru.val.par="μ")
+#' covg
+#' write_tsv(covg, "mu-coverage.tsv")
+#'
+#' @rdname Coverage
+reportCoverage <- function(df.posterior, df.tru.val, tru.val.par="μ",
+                           sim.coln="simulation") {
   require(tidyverse)
+  stopifnot(tru.val.par %in% colnames(df.tru.val))
+  stopifnot(sim.coln %in% colnames(df.tru.val))
+  stopifnot(sim.coln %in% colnames(df.posterior))
+  cat("Compute coverage for ", tru.val.par, "from", nrow(df.tru.val) ,
+      "simulations ...\n")
 
-  cat("Load posterior ", posteriorFile, "...\n")
-  trueVals <- try(read_tsv(trueValsFile, col_types = cols()))
-  param <- try(read_tsv(posteriorFile, col_types = cols()))
-  #stopifnot( all(colnames(trueVals)[2:ncol(trueVals)] == colnames(param)[2:ncol(param)]) )
-
-  cat("Grep true value of ", tru.val.par, "...\n")
   # tru.val.par="μ"
-  param <- param %>% rbind(trueVals %>% filter(grepl(!!tru.val.par, parameter, fixed = T)) %>% unlist)
-  statNames <- param %>% select(trace) %>% unlist
-  # replace to "true.val"
-  statNames[length(statNames)] <- "true.val"
+  tru.vals <- df.tru.val %>% select(!!sim.coln, !!tru.val.par)
 
-  anal <- param %>% select(!trace) %>% rownames_to_column %>%
-    gather(analysis, value, -rowname) %>% spread(rowname, value) %>%
-    mutate_at(2:ncol(.), as.numeric)
-  colnames(anal)[2:ncol(anal)] <- statNames
+  # merge
+  covg <- tru.vals %>% inner_join(df.posterior, by = sim.coln)  %>%
+    mutate(is.in = (!!tru.val.par >= HPD95.lower & !!tru.val.par <= HPD95.upper) )
 
-  # sort by true value
-  anal <- anal %>% arrange(true.val) %>%
-    # for colouring
-    mutate(is.in = (true.val >= HPD95.lower & true.val <= HPD95.upper) ) %>%
-    mutate(analysis = fct_reorder(analysis, true.val))
-  # analysis    mean HPD95.lower HPD95.upper   ESS    true
-  print(anal, n = 5)
-  return(anal)
+  print(covg, n = 5)
+  return(covg)
 }
 
 

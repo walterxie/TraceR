@@ -22,7 +22,7 @@ extra.stats # extra 10 simulations: *_100.tsv ~ *_109.tsv
 sele.res <- selectResultByESS(i.sta=0, i.end=99, prefix="al2",
                                tree.file.postfix=NA, extra.files = extra.stats)
 
-low.ess <- sele.res$lowESS
+sele.res$lowESS
 sele.list <- sele.res$selected
 sele.list[[1]]
 names(sele.list)
@@ -44,5 +44,11 @@ df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ", "r_0", "r_1"
 df.tru
 getwd()
 write_tsv(df.tru, "trueValue.tsv")
+
+# df.pos <- summ$param.summaries[["mu"]]
+df.pos <- read_tsv("mu.tsv")
+covg <- reportCoverage(df.pos, df.tru, tru.val.par="μ")
+covg
+write_tsv(covg, "mu-coverage.tsv")
 
 

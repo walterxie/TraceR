@@ -5,6 +5,7 @@
 \alias{selectResultByESS}
 \alias{summariseParameters}
 \alias{summariseTrueValues}
+\alias{reportCoverage}
 \title{Coverage Report from Model Validation}
 \usage{
 selectResultByESS(
@@ -31,6 +32,13 @@ summariseTrueValues(
   log.file.fun = function(x) {     paste0(x, "_true.log") },
   tree.file.fun = function(x) {     paste0(x, "_true_ψ.trees") },
   params = c("μ", "Θ")
+)
+
+reportCoverage(
+  df.posterior,
+  df.tru.val,
+  tru.val.par = "μ",
+  sim.coln = "simulation"
 )
 }
 \arguments{
@@ -76,6 +84,18 @@ The tree stats are fixed to "total.br.len" (total branch length)
 and "tree.height" at the moment.
 Set to NA, if tree stats (e.g total branch length,
 root height) is not required.}
+
+\item{df.posterior}{The data frame containing the final stats summary of
+the posterior of the selected parameter.}
+
+\item{df.tru.val}{The data frame containing all of the true values
+from all LPhy simulations. Created by \code{summariseTrueValues}}
+
+\item{tru.val.par}{The parameter name in LPhy script, which may be different
+to one in the BEAST log.}
+
+\item{sim.coln}{The default column name as the key both in
+\code{df.posterior} and \code{df.tru.val}.}
 }
 \description{
 The pipeline to generate a coverage report of the model validation.
@@ -109,8 +129,10 @@ The inputs files are produced by \code{\link{summariseTracesAndTrees}}.
 Set \code{tree.file.postfix=NA} and \code{extr.tree.files=c()},
 if it does not require tree stats tsv files.
 
-\code{summariseParameters} creates a final summary file for each given
-parameters.
+\code{summariseParameters} creates a file for each given parameters
+storing the final stats summary of the posterior.
+It also returns a list of data frame containing a parameter stats summary in each,
+where rows are simulations and columns are statistics.
 
 \code{summariseTrueValues} return a data frame to contain all of
 the true values from all LPhy simulations.
@@ -119,6 +141,13 @@ but they can be computed from the true tree.
 
 The returned data frame for "true values" uses the same format of BEAST 2
 model validation pipeline \url{https://github.com/rbouckaert/DeveloperManual}.
+
+\code{reportCoverage} produces a data frame as the report for
+the selected simulations to measure how many true values are falling into
+or outside the 95% HPD interval in the sampled posterior.
+
+Note: the same parameter may be given different names between LPhy script
+and BEAST XML/log, please ensure that you match them correctly.
 }
 \examples{
 WD = file.path("~/WorkSpace/MyValidations/")
@@ -138,11 +167,18 @@ names(sele.list)
 
 summ <- summariseParameters(sele.list,
            params = c("mu","Theta", "psi.treeLength", "psi.height"))
+min(summ$minESS)
 
 # list.files(pattern = "_true.log")
 df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"))
 getwd()
 write_tsv(df.tru, "trueValue.tsv")
+
+# df.pos <- read_tsv("mu.tsv")
+# df.tru <- read_tsv("trueValue.tsv")
+covg <- reportCoverage(df.pos, df.tru, tru.val.par="μ")
+covg
+write_tsv(covg, "mu-coverage.tsv")
 
 }
 \keyword{Coverage}
