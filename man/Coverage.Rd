@@ -173,6 +173,7 @@ names(sele.list)
 summ <- summariseParameters(sele.list,
            params = c("mu","Theta", "psi.treeLength", "psi.height"))
 min(summ$minESS)
+summ$param.summaries[["mu"]]
 
 # list.files(pattern = "_true.log")
 df.tru <- summariseTrueValues(names(sele.list), params=c("μ","Θ"), add.tree.stats=TRUE)

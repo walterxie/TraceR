@@ -213,6 +213,7 @@ pullAnthorFromExtra <- function(curr.idx,
 #' summ <- summariseParameters(sele.list,
 #'            params = c("mu","Theta", "psi.treeLength", "psi.height"))
 #' min(summ$minESS)
+#' summ$param.summaries[["mu"]]
 #'
 #' @rdname Coverage
 summariseParameters <- function(selected=list(),
@@ -253,15 +254,14 @@ summariseParameters <- function(selected=list(),
       gather(key = simulation, value = value, -trace) %>%
       group_by(trace) %>% # keep 'trace' in previous order
       spread(key = trace, value = value)
-    # save to list
-    param.summaries[[pa]] <- df
 
-    if (!is.na(tmp.minESS) && tmp.minESS >= 200) {
-      if (is.function(output.file.fun))
-        write_tsv(df, paste0(pa, ".tsv"))
-    } else
-      warning("Summary not generated ! ", pa, " min ESS = ", tmp.minESS, "\n")
     minESS <- c(minESS, tmp.minESS)
+
+    # save to list
+    if (!is.na(tmp.minESS) && tmp.minESS >= 200) {
+      param.summaries[[pa]] <- df
+    } else
+      warning("Fail to create summary for ", pa, " ! ", ", min ESS = ", tmp.minESS, "\n")
   }
 
   list(param.summaries=param.summaries, minESS=minESS)

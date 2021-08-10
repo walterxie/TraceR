@@ -27,10 +27,13 @@ sele.list <- sele.res$selected
 sele.list[[1]]
 names(sele.list)
 
-summ <- summariseParameters(sele.list,
-                            params = c("mu","Theta", "r_0", "r_1", "r_2",
-                                       "psi.treeLength", "psi.height"))
-
+beast.params = c("mu","Theta", "r_0", "r_1", "r_2", "psi.treeLength", "psi.height")
+summ <- summariseParameters(sele.list, params = beast.params)
+for (pa in beast.params) {
+  df <- summ$param.summaries[[pa]]
+  write_tsv(df, paste0(pa, ".tsv"))
+  cat("Write ", paste0(pa, ".tsv"), "\n")
+}
 cat("min ESS = ", paste(summ$minESS, collapse = ", "), "\n")
 cat("min of min ESS = ", min(summ$minESS), "\n")
 
