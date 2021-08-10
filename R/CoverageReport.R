@@ -1,5 +1,5 @@
 # Author: Walter Xie
-# Accessed on 27 Jul 2021
+# Accessed on 11 Aug 2021
 
 #' @name Coverage
 #' @title Coverage Report from Model Validation
@@ -24,10 +24,14 @@
 #'    then the pipeline stops and inform to re-run all simulations with longer
 #'    MCMC chain length. See \code{\link{selectResultByESS}}.
 #'
-#' 3. Create a final summary file for visualisations.
+#' 3. Create a final summary file for each of parameters
+#'    and 1 file for true values of all parameters.
 #'    See \code{\link{summariseParameters}} and \code{\link{summariseTrueValues}}.
 #'
-#' 4. Plot coverage.
+#' 4. Mark how many true values are falling into or outside the 95% HPD interval
+#'    of posteriors. See \code{\link{markInOut}}.
+#'
+#' 5. Plot and report the coverage. See \code{\link{ggCoverage}}.
 #'
 #'
 #' @details

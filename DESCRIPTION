@@ -1,11 +1,11 @@
 Package: TraceR
-Title: Simplified Tracer in R
+Title: Simplified Tracer in R and Extras
 Version: 0.0.3
-Authors@R: c(person("Dong", "Xie", email = "walter@cs.auckland.ac.nz", role = c("aut", "cre", "cph")),
-			person("Andrew", "Rambaut", role = c("aut", "cph")),
-			person("Marc", "Suchard", role = c("aut", "cph")),
-			person("Alexei", "Drummond", role = c("aut", "cph")))
-Description: What the package does (one paragraph).
+Authors@R: c(person("Walter", "Xie", email = "walter@cs.auckland.ac.nz", role = c("aut", "cre", "cph")),
+      person("Alexei", "Drummond", role = c("aut", "cph")))
+Description: A simplified implementation of Tracer, 
+             but adding extra tree statistics, 
+             and coverage tests for validating Bayesian phylogenetic models.
 Depends:
     R (>= 3.2.3)
 License: GNU3

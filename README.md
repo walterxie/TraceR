@@ -1,4 +1,4 @@
-# Tracer in R
+# Simplified Tracer in R and Extras
 
 In development. 
 
