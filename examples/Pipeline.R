@@ -47,8 +47,8 @@ write_tsv(df.tru, "trueValue.tsv")
 
 # df.pos <- summ$param.summaries[["mu"]]
 df.pos <- read_tsv("mu.tsv")
-covg <- reportCoverage(df.pos, df.tru, tru.val.par="μ")
-covg
-write_tsv(covg, "mu-coverage.tsv")
+inOut <- markInOut(df.pos, df.tru, tru.val.par="μ")
+write_tsv(inOut, "mu-coverage.tsv")
 
+nrow(inOut[inOut$is.in==T,])/nrow(inOut)
 

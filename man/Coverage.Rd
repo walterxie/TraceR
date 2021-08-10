@@ -5,7 +5,7 @@
 \alias{selectResultByESS}
 \alias{summariseParameters}
 \alias{summariseTrueValues}
-\alias{reportCoverage}
+\alias{markInOut}
 \title{Coverage Report from Model Validation}
 \usage{
 selectResultByESS(
@@ -34,11 +34,13 @@ summariseTrueValues(
   params = c("μ", "Θ")
 )
 
-reportCoverage(
+markInOut(
   df.posterior,
   df.tru.val,
   tru.val.par = "μ",
-  sim.coln = "simulation"
+  sim.coln = "simulation",
+  HPD95.lower = "HPD95.lower",
+  HPD95.upper = "HPD95.upper"
 )
 }
 \arguments{
@@ -176,9 +178,9 @@ write_tsv(df.tru, "trueValue.tsv")
 
 # df.pos <- read_tsv("mu.tsv")
 # df.tru <- read_tsv("trueValue.tsv")
-covg <- reportCoverage(df.pos, df.tru, tru.val.par="μ")
-covg
-write_tsv(covg, "mu-coverage.tsv")
+inOut <- markInOut(df.pos, df.tru, tru.val.par="μ")
+inOut
+write_tsv(inOut, "mu-coverage.tsv")
 
 }
 \keyword{Coverage}

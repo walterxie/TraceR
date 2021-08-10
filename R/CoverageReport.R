@@ -371,27 +371,42 @@ summariseTrueValues <- function(selected.fn.steam=c(),
 #' @examples
 #' # df.pos <- read_tsv("mu.tsv")
 #' # df.tru <- read_tsv("trueValue.tsv")
-#' covg <- reportCoverage(df.pos, df.tru, tru.val.par="μ")
-#' covg
-#' write_tsv(covg, "mu-coverage.tsv")
+#' inOut <- markInOut(df.pos, df.tru, tru.val.par="μ")
+#' inOut
+#' write_tsv(inOut, "mu-coverage.tsv")
 #'
 #' @rdname Coverage
-reportCoverage <- function(df.posterior, df.tru.val, tru.val.par="μ",
-                           sim.coln="simulation") {
+markInOut <- function(df.posterior, df.tru.val, tru.val.par="μ",
+                      sim.coln="simulation", HPD95.lower="HPD95.lower",
+                      HPD95.upper="HPD95.upper") {
   require(tidyverse)
+  stopifnot(nrow(df.posterior) == nrow(df.tru.val))
   stopifnot(tru.val.par %in% colnames(df.tru.val))
   stopifnot(sim.coln %in% colnames(df.tru.val))
   stopifnot(sim.coln %in% colnames(df.posterior))
+  stopifnot(HPD95.lower %in% colnames(df.posterior))
+  stopifnot(HPD95.upper %in% colnames(df.posterior))
   cat("Compute coverage for ", tru.val.par, "from", nrow(df.tru.val) ,
       "simulations ...\n")
 
   # tru.val.par="μ"
-  tru.vals <- df.tru.val %>% select(!!sim.coln, !!tru.val.par)
+  tru.vals <- df.tru.val %>% select(!!sim.coln, !!tru.val.par) %>%
+    # var as col name not working with logic op
+    rename(true.val = !!tru.val.par)
 
   # merge
-  covg <- tru.vals %>% inner_join(df.posterior, by = sim.coln)  %>%
-    mutate(is.in = (!!tru.val.par >= HPD95.lower & !!tru.val.par <= HPD95.upper) )
+  covg <- tru.vals %>% inner_join(df.posterior, by = sim.coln) %>%
+    # var as col name not working with logic op
+    rename(HPD95.lower = !!HPD95.lower) %>%
+    rename(HPD95.upper = !!HPD95.upper)
+  stopifnot(nrow(covg) == nrow(df.posterior))
 
+  stopifnot(c("true.val","HPD95.lower","HPD95.upper") %in% colnames(covg))
+  covg <-covg %>%
+    mutate(is.in = (true.val >= HPD95.lower & true.val <= HPD95.upper) )
+# not working
+#  mutate(is.in1 := ( !!HPD95.upper >= true.val) ) %>%
+#  mutate(is.in2 := ( !!HPD95.lower <= true.val) )
   print(covg, n = 5)
   return(covg)
 }
