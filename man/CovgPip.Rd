@@ -164,7 +164,7 @@ sele.list <- pipSelectValidResults(i.sta=0, i.end=99, prefix="al2",
                                    extra.tree.file.fun=NA)
 
 beast.params = c("mu","Theta", "r_0", "r_1", "r_2", "psi.treeLength", "psi.height")
-summ <- summariseParameters(sele.list, params = beast.params)
+summ <- pipCreateParameterSummaries(sele.list, params = beast.params)
 summ$param.summaries[["mu"]]
 
 # list.files(pattern = "_true.log")

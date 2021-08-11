@@ -133,7 +133,8 @@ pipSelectValidResults <- function(i.sta=0, i.end=99, prefix="sim",
                                 extra.file.steam.fun=extra.file.steam.fun,
                                 extra.files = extra.files, extra.tree.files=extra.tree.files)
 
-  if (nrow(sele.res$lowESS)>0)
+  lowESS <- sele.res$lowESS
+  if (nrow(lowESS)>0)
     write_tsv(lowESS, file.path(paste0("low-ESS.tsv")) )
 
   stopifnot(length(sele.res$selected) == n.sim)
@@ -153,7 +154,7 @@ pipSelectValidResults <- function(i.sta=0, i.end=99, prefix="sim",
 #' @export
 #' @examples
 #' beast.params = c("mu","Theta", "r_0", "r_1", "r_2", "psi.treeLength", "psi.height")
-#' summ <- summariseParameters(sele.list, params = beast.params)
+#' summ <- pipCreateParameterSummaries(sele.list, params = beast.params)
 #' summ$param.summaries[["mu"]]
 #'
 #' @rdname CovgPip

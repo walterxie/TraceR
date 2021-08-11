@@ -20,38 +20,29 @@ all.stats
 sele.list <- pipSelectValidResults(i.sta=0, i.end=99, prefix="al2",
                                    extra.tree.file.fun=NA)
 
-
-
-beast.params = c("mu","Theta", "r_0", "r_1", "r_2", "psi.treeLength", "psi.height")
+# params to report
+beast.params = c("mu","Theta", "r_0", "r_1", "r_2",
+                 "kappa.1", "kappa.2", "kappa.3",
+                 "pi_0.A", "pi_0.C", "pi_0.G", "pi_0.T",
+                 "pi_1.A", "pi_1.C", "pi_1.G", "pi_1.T",
+                 "pi_2.A", "pi_2.C", "pi_2.G", "pi_2.T",
+                 "psi.treeLength", "psi.height")
 summ <- summariseParameters(sele.list, params = beast.params)
-for (pa in beast.params) {
-  df <- summ$param.summaries[[pa]]
-  write_tsv(df, paste0(pa, ".tsv"))
-  cat("Write ", paste0(pa, ".tsv"), "\n")
-}
-cat("min ESS = ", paste(summ$minESS, collapse = ", "), "\n")
-cat("min of min ESS = ", min(summ$minESS), "\n")
+summ$param.summaries[["mu"]]
 
-true.log.files = list.files(pattern = "_true.log")
-true.log.files
-# LPhy parameters in the true-value log
-read_tsv("al2_0_true.log") %>% names
-# list.files(pattern = "_true_ψ.trees")
-
+lphy.params = c("μ","Θ","r_0","r_1","r_2","κ_0","κ_1","κ_2",
+                "π_0_0","π_0_1","π_0_2","π_0_3",
+                "π_1_0","π_1_1","π_1_2","π_1_3",
+                "π_2_0","π_2_1","π_2_2","π_2_3")
 # the order of parameters same to BEAST parameters
-df.tru <- summariseTrueValues(names(sele.list),
-                              params=c("μ","Θ", "r_0", "r_1", "r_2"),
-                              add.tree.stats=TRUE)
-df.tru
-getwd()
-write_tsv(df.tru, "trueValue.tsv")
+df.tru <- pipCreateTrueValueSummaries(names(sele.list), params=lphy.params,
+                                                add.tree.stats=TRUE)
 
-# df.pos <- summ$param.summaries[["mu"]]
-df.pos <- read_tsv("mu.tsv")
-inOut <- markInOut(df.pos, df.tru, tru.val.par="μ")
-write_tsv(inOut, "mu-coverage.tsv")
 
-nrow(inOut[inOut$is.in==T,])/nrow(inOut)
+covg <- reportCoverages(beast.params = beast.params,
+                        lphy.params = c(lphy.params, "total.br.len","tree.height"))
+
+
 
 p <- ggCoverage(inOut, x.lab="True mu value")
 p
