@@ -12,7 +12,7 @@
 #' \code{selectResultByESS} selects 100 simulation results, where the ESS of
 #' every parameters are guaranteed >= 200.
 #' The inputs files are produced by \code{\link{summariseTracesAndTrees}}.
-#' Set \code{tree.file.postfix=NA} and \code{extra.tree.files=c()},
+#' Set \code{tree.file.postfix=NA} and keep \code{extra.tree.files=c()},
 #' if it does not require tree stats tsv files.
 #'
 #' @param i.sta,i.end  The start index or end index of batch runs,

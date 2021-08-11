@@ -9,24 +9,18 @@ WD = file.path("~/WorkSpace/linguaPhylo/manuscript/test/")
 setwd(WD)
 
 log.files = list.files(pattern = "_([0-9]+).log")
-log.files
-for(lg in log.files) {
-  res <- summariseTracesAndTrees(lg, tree.file=NA)
-}
+log.files # 110 simulations
 # parameters in BEAST log
-names(res$stats)
+all.beast.params <- pipCreateSimulationSummaries(log.files, burn.in=0.1)
+all.beast.params
 
 all.stats = list.files(pattern = "_([0-9]+).tsv")
-extra.stats = all.stats[grep("_10([0-9]).tsv", all.stats, ignore.case = T)]
-extra.stats # extra 10 simulations: *_100.tsv ~ *_109.tsv
+all.stats
+# select vaild results
+sele.list <- pipSelectValidResults(i.sta=0, i.end=99, prefix="al2",
+                                   extra.tree.file.fun=NA)
 
-sele.res <- selectResultByESS(i.sta=0, i.end=99, prefix="al2",
-                               tree.file.postfix=NA, extra.files = extra.stats)
 
-sele.res$lowESS
-sele.list <- sele.res$selected
-sele.list[[1]]
-names(sele.list)
 
 beast.params = c("mu","Theta", "r_0", "r_1", "r_2", "psi.treeLength", "psi.height")
 summ <- summariseParameters(sele.list, params = beast.params)

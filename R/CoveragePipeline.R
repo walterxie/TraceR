@@ -114,10 +114,11 @@ pipSelectValidResults <- function(i.sta=0, i.end=99, prefix="sim",
   tree.file.postfix="trees.tsv"
   # extra 10 simulations: *_100.tsv ~ *_109.tsv
   extra.stats = extra.file.fun(file.postfix)
+  extra.tree.files = c()
   if (is.function(extra.tree.file.fun))
     extra.tree.files = extra.tree.file.fun(tree.file.postfix)
   else
-    extra.tree.files = c()
+    tree.file.postfix=NA # Set tree.file.postfix=NA and keep extra.tree.files=c()
 
   sele.res <- selectResultByESS(i.sta=i.sta, i.end=i.end, prefix=prefix,
                                 file.steam.fun=file.steam.fun,
