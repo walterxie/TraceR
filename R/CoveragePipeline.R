@@ -114,14 +114,16 @@ pipSelectValidResults <- function(i.sta=0, i.end=99, prefix="sim",
   tree.file.postfix="trees.tsv"
   # extra 10 simulations: *_100.tsv ~ *_109.tsv
   extra.files = extra.file.fun(file.postfix)
+  if (length(extra.files) < 2)
+    stop("Cannot find extra stats file using function : ", extra.file.fun)
   cat("Prepare ", length(extra.files), " extra stats files : ",
-      paste(extra.files, collapse = T), ".\n")
+      paste(extra.files, collapse = ", "), ".\n")
 
   extra.tree.files = c()
   if (is.function(extra.tree.file.fun)) {
     extra.tree.files = extra.tree.file.fun(tree.file.postfix)
     cat("Prepare ", length(extra.tree.files), " extra tree stats files : ",
-        paste(extra.tree.files, collapse = T), ".\n")
+        paste(extra.tree.files, collapse = ", "), ".\n")
   } else
     tree.file.postfix=NA # Set tree.file.postfix=NA and keep extra.tree.files=c()
 
@@ -213,7 +215,7 @@ pipCreateTrueValueSummaries <- function(selected.fn.steam=c(),
   tru.log <- log.file.fun(selected.fn.steam[[1]])
   pa.nm <- read_tsv(tru.log) %>% names
   cat("Find ", length(pa.nm), " LPhy parameters in ", tru.log, " : ",
-      paste(pa.nm, collapse = T), "\n")
+      paste(pa.nm, collapse = ", "), "\n")
   # list.files(pattern = "_true_ψ.trees")
 
   # the order of parameters same to BEAST parameters
