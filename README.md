@@ -84,10 +84,12 @@ traces <- getTraces(mcmc.log, burn.in=0.1)
 stats <- analyseTraces(traces)
 ```
 
-Please note: [ComMA](https://github.com/walterxie/ComMA) package here   
-is only used for plotting. You can use ggplot2 instead.
-ComMA will be replaced by the original ggplot2 code, 
-and then removed from the future dependecy.  
+Please note: you can use ggplot2 instead of [ComMA](https://github.com/walterxie/ComMA)
+package for visualisation. 
+`gtTraces(...)` is the only function depending on ComMA, 
+and the ComMA code will be removed from the future dependecy,
+after it is replaced by the ggplot2 code. 
+
 
 ```R
 devtools::install_github("walterxie/ComMA")
