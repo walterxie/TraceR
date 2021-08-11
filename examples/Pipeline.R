@@ -4,6 +4,7 @@ remove.packages("TraceR")
 devtools::install_github("walterxie/TraceR")
 library("TraceR")
 
+# cp ../alpha2/*.log ../alpha2/*.trees .
 WD = file.path("~/WorkSpace/linguaPhylo/manuscript/test/")
 setwd(WD)
 

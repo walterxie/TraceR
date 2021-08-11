@@ -2,43 +2,17 @@
 # Accessed on 11 Aug 2021
 
 #' @name Coverage
-#' @title Coverage Report from Model Validation
+#' @title Coverage Report Functions for Model Validation
 #'
 #' @description
-#' The pipeline to generate a coverage report of the model validation.
-#'
-#' 1. Summarise traces statistics for every simulations (normally starting 110,
-#'    where 10 extra simulations are used for replacing any low ESS results
-#'    in the next step), and save each result into a tsv file. It looks like:
-#'    trace           posterior  likelihood  ...
-#'    mean            -16848.58  -16269.03   ...
-#'    stderr.of.mean	0.249      0.200       ...
-#'    ...
-#'    Note: if tree stats are logged into BEAST log file,
-#'    you can set \code{tree.file=NA} to skip creating tree stats tsv file.
-#'    See \code{\link{summariseTracesAndTrees}}.
-#'
-#' 2. Select 100 simulations where the ESS of every parameters are guaranteed
-#'    >= 200. If not, then replace it to the one from the extra 10 sequentially,
-#'    and check ESS. If all extra 10 are used but there exists any low-ESS simulations,
-#'    then the pipeline stops and inform to re-run all simulations with longer
-#'    MCMC chain length. See \code{\link{selectResultByESS}}.
-#'
-#' 3. Create a final summary file for each of parameters
-#'    and 1 file for true values of all parameters.
-#'    See \code{\link{summariseParameters}} and \code{\link{summariseTrueValues}}.
-#'
-#' 4. Mark how many true values are falling into or outside the 95% HPD interval
-#'    of posteriors. See \code{\link{markInOut}}.
-#'
-#' 5. Plot and report the coverage. See \code{\link{ggCoverage}}.
-#'
+#' The basic functions to generate a coverage report of the model validation.
+#' They are assembled in a pipeline, see \code{\link{CovgPip}}.
 #'
 #' @details
 #' \code{selectResultByESS} selects 100 simulation results, where the ESS of
 #' every parameters are guaranteed >= 200.
 #' The inputs files are produced by \code{\link{summariseTracesAndTrees}}.
-#' Set \code{tree.file.postfix=NA} and \code{extr.tree.files=c()},
+#' Set \code{tree.file.postfix=NA} and \code{extra.tree.files=c()},
 #' if it does not require tree stats tsv files.
 #'
 #' @param i.sta,i.end  The start index or end index of batch runs,
@@ -52,7 +26,7 @@
 #' @param file.steam.fun,extra.file.steam.fun
 #'                The function to extract the file steam,
 #'                which is used as a key to identify the simulation.
-#' @param extra.files,extr.tree.files
+#' @param extra.files,extra.tree.files
 #'                The extra files used to replace the low ESS results.
 #' @keywords Coverage
 #' @export
@@ -77,7 +51,7 @@ selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
                               file.steam.fun=function(prefix, i){ paste0(prefix, "_", i) },
                               file.postfix="tsv", tree.file.postfix="trees.tsv",
                               extra.file.steam.fun=function(f){ sub('\\.tsv$', '', f) },
-                              extra.files = c(), extr.tree.files=c() ) {
+                              extra.files = c(), extra.tree.files=c() ) {
   require(tidyverse)
   # record 100 files whose ESS >= 200
   tracesDF <- list()
@@ -96,20 +70,19 @@ selectResultByESS <- function(i.sta=0, i.end=99, prefix="sim",
     if (!is.na(tree.file.postfix)) {
       # if tree stats file exists
       tre.sta.fi <- paste0(fn, ".", tree.file.postfix)
-      if (file.exists(tre.sta.fi)) {
-        cat("Load ", tre.sta.fi, "...\n")
-        # add tree stats (in cols)
-        traces <- addTreeStats(tre.sta.fi, traces)
-      }
+      cat("Load ", tre.sta.fi, "...\n")
+      stopifnot(file.exists(tre.sta.fi))
+      # add tree stats (in cols)
+      traces <- addTreeStats(tre.sta.fi, traces)
     }
 
     # if low ESS
     if (minESS < 200) {
-      # skip tree stats, if length(extr.tree.files)<=0
+      # skip tree stats, if length(extra.tree.files)<=0
       selected <- pullAnthorFromExtra(extr,
                                       extra.file.steam.fun=extra.file.steam.fun,
                                       extra.files=extra.files,
-                                      extr.tree.files=extr.tree.files )
+                                      extra.tree.files=extra.tree.files )
       # selected extra
       file.selected <- selected$file.selected
       cat("Replace the low ESS result", fi, "to", file.selected, "\n")
@@ -153,7 +126,7 @@ addTreeStats <- function(tree.stats.file="sim_0.trees.tsv", traces) {
 #stderr.of.mean	0.948421280126143	0.142003271885284
 pullAnthorFromExtra <- function(curr.idx,
                                 extra.file.steam.fun=function(f){ sub('\\.tsv$', '', f) },
-                                extra.files=c(), extr.tree.files=c()) {
+                                extra.files=c(), extra.tree.files=c()) {
   require(tidyverse)
   if (curr.idx >= length(extra.files)) # length(extra.files) extra
     stop("Not enough extra simulations to replace low-ESS simulations !\n",
@@ -173,8 +146,8 @@ pullAnthorFromExtra <- function(curr.idx,
 
     # all ESS >= 200 then break, otherwise continue the loop
     if (minESS >= 200) {
-      if (length(extr.tree.files)>0) {
-        tre.sta.fi <- extr.tree.files[curr.idx]
+      if (!anyNA(extra.tree.files) && length(extra.tree.files)>0) {
+        tre.sta.fi <- extra.tree.files[curr.idx]
         stopifnot(file.exists(tre.sta.fi))
         # add tree stats
         traces <- addTreeStats(tre.sta.fi, traces)
@@ -225,8 +198,8 @@ summariseParameters <- function(selected=list(),
           stats.name = c("mean", "HPD95.lower", "HPD95.upper", "stdev", "ESS"),
           output.file.fun=function(x){ paste0(x, ".tsv") }) {
   require(tidyverse)
-  cat("\nSelect ", length(selected)," simulations : ", paste(names(selected), collapse = ", "), ".\n")
-  cat("Summarise BEAST parameters : ", paste(params, collapse = ", "), ".\n")
+  cat("\nSummarise ", length(params)," BEAST parameters : ", paste(params, collapse = ", "), ".\n")
+  cat("Select ", length(selected)," valid results : ", paste(names(selected), collapse = ", "), ".\n")
 
   minESS <- c()
   param.summaries <- list()
@@ -237,6 +210,9 @@ summariseParameters <- function(selected=list(),
     pa.stats <- NULL
     for(i in 1:length(selected)) {
       fns <- names(selected)[i]
+      # trace	posterior	likelihood	prior	pi_0.A
+      stopifnot( all( params %in% names(selected[[i]]) ) )
+
       # "mean", "HPD95.lower", "HPD95.upper", "ESS"
       pa.stats <- selected[[i]] %>% select(trace, !!pa) %>%
         filter(trace %in% stats.name)
@@ -304,10 +280,9 @@ summariseParameters <- function(selected=list(),
 #' write_tsv(df.tru, "trueValue.tsv")
 #'
 #' @rdname Coverage
-summariseTrueValues <- function(selected.fn.steam=c(),
+summariseTrueValues <- function(selected.fn.steam=c(), params=c("μ","Θ"), add.tree.stats=TRUE,
                                 log.file.fun=function(x){ paste0(x,"_true.log") },
-                                tree.file.fun=function(x){ paste0(x,"_true_ψ.trees") },
-                                params=c("μ","Θ"), add.tree.stats=TRUE) {
+                                tree.file.fun=function(x){ paste0(x,"_true_ψ.trees") } ) {
   require(tidyverse)
   df.tru <- tibble(parameter = params)
 
@@ -317,9 +292,10 @@ summariseTrueValues <- function(selected.fn.steam=c(),
     # add 2 tree stats
     df.tru <- tibble(parameter = c(params, "total.br.len","tree.height"))
   }
-  cat("\nSelect ", length(selected.fn.steam)," true-value files : ",
+  cat("\nCreating one true-value file for ", length(params), " LPhy parameters : ",
+      paste(params, collapse = ", "), "...\n")
+  cat("Select ", length(selected.fn.steam)," valid results : ",
       paste(selected.fn.steam, collapse = ", "), ".\n")
-  cat("Summarise LPhy parameters : ", paste(params, collapse = ", "), ".\n")
 
   # true values from a file
   tru <- NULL

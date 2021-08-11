@@ -21,7 +21,7 @@
 #' @param burn.in   The proportion of samples treated as the burn-in stage
 #'                  during MCMC. Default to 0.1.
 #' @param stats.fn.fun,tree.stats.fn.fun The function to create the result file names
-#'                  from the given log file names. Set to NA, if you do not want to
+#'                  from the given BEAST log file names. Set to NA, if you do not want to
 #'                  create the files.
 #' @keywords TracerAdv
 #' @export

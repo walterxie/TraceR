@@ -6,7 +6,7 @@
 \alias{summariseParameters}
 \alias{summariseTrueValues}
 \alias{markInOut}
-\title{Coverage Report from Model Validation}
+\title{Coverage Report Functions for Model Validation}
 \usage{
 selectResultByESS(
   i.sta = 0,
@@ -17,7 +17,7 @@ selectResultByESS(
   tree.file.postfix = "trees.tsv",
   extra.file.steam.fun = function(f) {     sub("\\\\.tsv$", "", f) },
   extra.files = c(),
-  extr.tree.files = c()
+  extra.tree.files = c()
 )
 
 summariseParameters(
@@ -29,10 +29,10 @@ summariseParameters(
 
 summariseTrueValues(
   selected.fn.steam = c(),
-  log.file.fun = function(x) {     paste0(x, "_true.log") },
-  tree.file.fun = function(x) {     paste0(x, "_true_ψ.trees") },
   params = c("μ", "Θ"),
-  add.tree.stats = TRUE
+  add.tree.stats = TRUE,
+  log.file.fun = function(x) {     paste0(x, "_true.log") },
+  tree.file.fun = function(x) {     paste0(x, "_true_ψ.trees") }
 )
 
 markInOut(
@@ -58,7 +58,7 @@ This function uses \code{\link{readTracesTSV}},
 The file extension can be different, but the file
 has to be tab-delimited text file.}
 
-\item{extra.files, extr.tree.files}{The extra files used to replace the low ESS results.}
+\item{extra.files, extra.tree.files}{The extra files used to replace the low ESS results.}
 
 \item{selected}{The list of data frames containing traces summary,
 produced by \code{\link{selectResultByESS}}.}
@@ -76,6 +76,12 @@ Set to NA, if you do not want to create the files.}
 by \code{selectResultByESS} to summarise
 the coverage.}
 
+\item{add.tree.stats}{Default to TRUE, to summarise true tree stats
+which are fixed to "total.br.len" (total branch length)
+and "tree.height" at the moment.
+Set to False, if tree stats is not required
+in the data frame.}
+
 \item{log.file.fun}{The function to get one-line log file name,
 containing true values from LPhy simulations,
 where one LPhy log file per simulation.}
@@ -83,12 +89,6 @@ where one LPhy log file per simulation.}
 \item{tree.file.fun}{The function to get one-tree log file name,
 containing true trees from LPhy simulations,
 where one LPhy tree file per simulation.}
-
-\item{add.tree.stats}{Default to TRUE, to summarise true tree stats
-which are fixed to "total.br.len" (total branch length)
-and "tree.height" at the moment.
-Set to False, if tree stats is not required
-in the data frame.}
 
 \item{df.posterior}{The data frame containing the final stats summary of
 the posterior of the selected parameter.}
@@ -103,39 +103,14 @@ to one in the BEAST log.}
 \code{df.posterior} and \code{df.tru.val}.}
 }
 \description{
-The pipeline to generate a coverage report of the model validation.
-
-1. Summarise traces statistics for every simulations (normally starting 110,
-   where 10 extra simulations are used for replacing any low ESS results
-   in the next step), and save each result into a tsv file. It looks like:
-   trace           posterior  likelihood  ...
-   mean            -16848.58  -16269.03   ...
-   stderr.of.mean	0.249      0.200       ...
-   ...
-   Note: if tree stats are logged into BEAST log file,
-   you can set \code{tree.file=NA} to skip creating tree stats tsv file.
-   See \code{\link{summariseTracesAndTrees}}.
-
-2. Select 100 simulations where the ESS of every parameters are guaranteed
-   >= 200. If not, then replace it to the one from the extra 10 sequentially,
-   and check ESS. If all extra 10 are used but there exists any low-ESS simulations,
-   then the pipeline stops and inform to re-run all simulations with longer
-   MCMC chain length. See \code{\link{selectResultByESS}}.
-
-3. Create a final summary file for each of parameters
-   and 1 file for true values of all parameters.
-   See \code{\link{summariseParameters}} and \code{\link{summariseTrueValues}}.
-
-4. Mark how many true values are falling into or outside the 95% HPD interval
-   of posteriors. See \code{\link{markInOut}}.
-
-5. Plot and report the coverage. See \code{\link{ggCoverage}}.
+The basic functions to generate a coverage report of the model validation.
+They are assembled in a pipeline, see \code{\link{CovgPip}}.
 }
 \details{
 \code{selectResultByESS} selects 100 simulation results, where the ESS of
 every parameters are guaranteed >= 200.
 The inputs files are produced by \code{\link{summariseTracesAndTrees}}.
-Set \code{tree.file.postfix=NA} and \code{extr.tree.files=c()},
+Set \code{tree.file.postfix=NA} and \code{extra.tree.files=c()},
 if it does not require tree stats tsv files.
 
 \code{summariseParameters} creates a file for each given parameters
