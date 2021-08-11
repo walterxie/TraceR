@@ -57,7 +57,7 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
 
   if (is.function(stats.fn.fun)) {
     fn <- stats.fn.fun(log.file)
-    write_tsv(stats, file = fn)
+    write_tsv(stats, fn)
   }
 
   # add tree stats
@@ -72,7 +72,7 @@ summariseTracesAndTrees <- function(log.file, tree.file=NA, burn.in=0.1,
     #tre.stats$trace <- sub("\\.STATE.*$","",tre.stats$trace, ignore.case = T)
     if (is.function(tree.stats.fn.fun)) {
       fn <- tree.stats.fn.fun(tree.file)
-      write_tsv(tre.sta, file = fn)
+      write_tsv(tre.sta, fn)
     }
   }
   list(stats=stats, tree.stats=tre.sta)
