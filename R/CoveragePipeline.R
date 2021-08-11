@@ -230,7 +230,7 @@ pipCreateTrueValueSummaries <- function(selected.fn.steam=c(),
 #' @details
 #' Step 5: \code{reportCoverages} marks how many true values are falling
 #' into or outside the 95% HPD interval of posteriors for each parameter,
-#' and report the overall coverage.
+#' and return the overall coverages in a data frame.
 #' It includes \code{\link{markInOut}}.
 #'
 #' Note: the same parameter may be given different names between LPhy script
@@ -256,16 +256,21 @@ reportCoverages <- function(beast.params = c("mu","Theta", "psi.treeLength", "ps
   stopifnot(length(beast.params)==length(lphy.params) && length(beast.params)>0)
 
   # true
-  stopifnot(file.exists(true.val.file))
+  cat("Load ", true.val.file, "...\n")
+  if(!file.exists(true.val.file))
+    stop("Cannot find true-value file ", true.val.file, " !\n")
   df.tru <- read_tsv(true.val.file, col_types = cols())
 
   covg <- c()
 
   for (i in 1:length(beast.params)) {
     pos.fn <- beast.summ.file.fun(beast.params[i])
-    stopifnot(file.exists(pos.fn))
+    cat("Load ", pos.fn, "...\n")
+    if(!file.exists(pos.fn))
+      stop("Cannot find ", beast.params[i], " summary file ", pos.fn, " !\n")
 
     df.pos <- read_tsv(pos.fn, col_types = cols())
+    # into or outside 95% HPD interval
     inOut <- markInOut(df.pos, df.tru, tru.val.par=lphy.params[i])
 
     write_tsv(inOut, paste0(beast.params[i], "-coverage.tsv"))

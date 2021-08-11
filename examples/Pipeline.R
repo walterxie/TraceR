@@ -27,8 +27,8 @@ beast.params = c("mu","Theta", "r_0", "r_1", "r_2",
                  "pi_1.A", "pi_1.C", "pi_1.G", "pi_1.T",
                  "pi_2.A", "pi_2.C", "pi_2.G", "pi_2.T",
                  "psi.treeLength", "psi.height")
-summ <- summariseParameters(sele.list, params = beast.params)
-summ$param.summaries[["mu"]]
+summ <- pipCreateParameterSummaries(sele.list, params = beast.params)
+print(summ$param.summaries[["mu"]], n=3)
 
 lphy.params = c("μ","Θ","r_0","r_1","r_2","κ_0","κ_1","κ_2",
                 "π_0_0","π_0_1","π_0_2","π_0_3",
@@ -37,13 +37,15 @@ lphy.params = c("μ","Θ","r_0","r_1","r_2","κ_0","κ_1","κ_2",
 # the order of parameters same to BEAST parameters
 df.tru <- pipCreateTrueValueSummaries(names(sele.list), params=lphy.params,
                                                 add.tree.stats=TRUE)
+print(df.tru, n=3)
 
 
 covg <- reportCoverages(beast.params = beast.params,
                         lphy.params = c(lphy.params, "total.br.len","tree.height"))
 
+covg
 
-
+inOut <- read_tsv("mu-coverage.tsv", col_types = cols())
 p <- ggCoverage(inOut, x.lab="True mu value")
 p
 # ggsave("mu.pdf", p, width = 4, height = 3)

@@ -145,7 +145,7 @@ It includes \code{\link{summariseTrueValues}}.
 
 Step 5: \code{reportCoverages} marks how many true values are falling
 into or outside the 95% HPD interval of posteriors for each parameter,
-and report the overall coverage.
+and return the overall coverages in a data frame.
 It includes \code{\link{markInOut}}.
 
 Note: the same parameter may be given different names between LPhy script
