@@ -23,6 +23,7 @@
 #' @keywords TreeStats
 #' @export
 #' @examples
+#' untar("data/RSV2long.tar.gz")
 #' tre.sta.df <- readTrees("data/RSV2long.trees")
 #'
 #' @rdname TreeStats

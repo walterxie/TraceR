@@ -36,6 +36,7 @@ tree height, etc.
 \code{id} is set to analyse the default selected columns.
 }
 \examples{
+untar("data/RSV2long.tar.gz")
 tre.sta.df <- readTrees("data/RSV2long.trees")
 
 tre.sta <- analyseTreeStats(tre.sta.df)
