@@ -43,7 +43,8 @@ reportCoverages(
   beast.params = c("mu", "Theta", "psi.treeLength", "psi.height"),
   lphy.params = c("μ", "Θ", "total.br.len", "tree.height"),
   beast.summ.file.fun = function(x) {     paste0(x, ".tsv") },
-  true.val.file = "trueValue.tsv"
+  true.val.file = "trueValue.tsv",
+  write.file = TRUE
 )
 }
 \arguments{
@@ -97,6 +98,10 @@ and they have to exactly match each other.}
 \item{beast.summ.file.fun}{The function to create beast posterior summary file name.}
 
 \item{true.val.file}{The file containing true values for every parameters.}
+
+\item{write.file}{Default to true to \code{\link{write_tsv}} for the coverage
+of a parameter. The file name is created by
+\code{paste0(beast.params[i], "-coverage.tsv")}.}
 }
 \description{
 The pipeline to generate a coverage report of the model validation.

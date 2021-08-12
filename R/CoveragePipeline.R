@@ -240,6 +240,9 @@ pipCreateTrueValueSummaries <- function(selected.fn.steam=c(),
 #'                                 and they have to exactly match each other.
 #' @param beast.summ.file.fun The function to create beast posterior summary file name.
 #' @param true.val.file The file containing true values for every parameters.
+#' @param write.file Default to true to \code{\link{write_tsv}} for the coverage
+#'                   of a parameter. The file name is created by
+#'                   \code{paste0(beast.params[i], "-coverage.tsv")}.
 #' @keywords Coverage
 #' @export
 #' @examples
@@ -250,7 +253,7 @@ pipCreateTrueValueSummaries <- function(selected.fn.steam=c(),
 reportCoverages <- function(beast.params = c("mu","Theta", "psi.treeLength", "psi.height"),
                             lphy.params = c("μ","Θ", "total.br.len","tree.height"),
                             beast.summ.file.fun=function(x){ paste0(x,".tsv") },
-                            true.val.file="trueValue.tsv") {
+                            true.val.file="trueValue.tsv", write.file=TRUE) {
   require(tidyverse)
   cat("\nPipeline step 5: report the overall coverage ...\n")
   stopifnot(length(beast.params)==length(lphy.params) && length(beast.params)>0)
@@ -273,7 +276,8 @@ reportCoverages <- function(beast.params = c("mu","Theta", "psi.treeLength", "ps
     # into or outside 95% HPD interval
     inOut <- markInOut(df.pos, df.tru, tru.val.par=lphy.params[i])
 
-    write_tsv(inOut, paste0(beast.params[i], "-coverage.tsv"))
+    if (write.file)
+      write_tsv(inOut, paste0(beast.params[i], "-coverage.tsv"))
 
     covg <- c(covg, nrow(inOut[inOut$is.in==T,])/nrow(inOut))
   }
