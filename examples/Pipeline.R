@@ -50,5 +50,16 @@ p <- ggCoverage(inOut, x.lab="True mu value")
 p
 # ggsave("mu.pdf", p, width = 4, height = 3)
 
+# log scale
+inOut <- read_tsv("Theta-coverage.tsv", col_types = cols())
+p <- ggCoverage(inOut, x.lab=paste0("True log-theta value"),
+                y.lab="Log-mean posterior", x.txt=1, y.txt=9000)
+# log scale and fix labels and text
+p <- p + scale_x_log10(limits = c(1,1e4),
+                       breaks = scales::trans_breaks("log10", function(x) 10^x),
+                       labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  scale_y_log10(limits = c(1,1e4), breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))
+p
 
 
