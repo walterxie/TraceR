@@ -33,7 +33,7 @@
 #' burn.in.stats
 #' names(mcmc.log)
 #'
-#' require("ComMA") # https://github.com/walterxie/ComMA
+#' require("gg1L") # https://github.com/walterxie/gg1L
 #' gt <- gtTraces(mcmc.log, burn.in.stats$burn.in)
 #' plot(gt)
 #'
@@ -85,14 +85,14 @@ gtTraces <- function(mcmc.log, burn.in, trace.id=c("posterior"), drop.1st.row=TR
       y.lab = trace.id
   }
 
-  suppressMessages(require(ComMA))
-  gg.plot <- ComMA::ggLineWithPoints(melt.df, x.id="state", y.id="value", group.id=group.id,
+  suppressMessages(require(gg1L))
+  gg.plot <- gg1L::ggLineWithPoints(melt.df, x.id="state", y.id="value", group.id=group.id,
                                 colour.id=colour.id, point.size=point.size, point.alpha=point.alpha,
                                 title=title, x.lab=x.lab, y.lab=y.lab,
                                 line.or.point=line.or.point, line.alpha=line.alpha,
                                 verbose=verbose, ...)
   # turns off clipping
-  gt <- ComMA::unclip.ggplot(gg.plot)
+  gt <- gg1L::unclip.ggplot(gg.plot)
   return(gt)
 }
 

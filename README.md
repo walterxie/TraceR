@@ -84,16 +84,16 @@ traces <- getTraces(mcmc.log, burn.in=0.1)
 stats <- analyseTraces(traces)
 ```
 
-Please note: you can use ggplot2 instead of [ComMA](https://github.com/walterxie/ComMA)
+Please note: you can use ggplot2 instead of [gg1L](https://github.com/walterxie/gg1L)
 package for visualisation. 
-`gtTraces(...)` is the only function depending on ComMA, 
-and the ComMA code will be removed from the future dependecy,
+`gtTraces(...)` is the only function depending on gg1L, 
+and the gg1L code will be removed from the future dependecy,
 after it is replaced by the ggplot2 code. 
 
 
 ```R
-devtools::install_github("walterxie/ComMA")
-library("ComMA")
+devtools::install_github("walterxie/gg1L")
+library("gg1L")
 ```
 
 
