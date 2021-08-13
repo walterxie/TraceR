@@ -30,9 +30,11 @@ The input files for this pipeline are:
 -   BEAST logs (tree logs) containing samples from the posterior,
 -   and LPhy logs (tree logs) containing true values.
 
-The examples are available to download from [](). They suppose to be
-kept in the same working directory. For example, I set my working
-directory to `~/WorkSpace/TraceR/examples/covgtest/` in the example.
+The example log files are available to download from
+[here](https://github.com/LinguaPhylo/linguaPhylo.github.io/tree/master/covgtest).
+You need to extract them into the same working directory. For example, I
+set my working directory to `~/WorkSpace/TraceR/examples/covgtest/` in
+the example.
 
 Then, check if all logs are ready. The files whose names satisfy with
 pattern `_([0-9]+).log` are BEAST 2 logs, ones with `_([0-9]+)_true.log`
