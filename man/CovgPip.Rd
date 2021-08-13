@@ -36,7 +36,7 @@ pipCreateTrueValueSummaries(
   params = c("μ", "Θ", "r_0", "r_1", "r_2"),
   add.tree.stats = TRUE,
   log.file.fun = function(x) {     paste0(x, "_true.log") },
-  tree.file.fun = function(x) {     paste0(x, "_true_ψ.trees") }
+  tree.file.fun = function(x) {     paste0(x, "_true.trees") }
 )
 
 reportCoverages(
@@ -124,25 +124,32 @@ mean            -16848.58  -16269.03   ...
 stderr.of.mean	0.249      0.200       ...
 ...
 
-Note: if tree stats are logged into BEAST log file,
-you can set \code{tree.file=NA} to skip creating tree stats tsv file
-from BEAST tree logs.
+Note: the default \code{process.tree.file=FALSE} will not
+process BEAST tree logs. This assumes the tree stats will be logged
+into BEAST log files.
+If you want to create tree stats from BEAST tree logs instead,
+then provide tree log files having the same file steams,
+and set it to TRUE.
 
 It includes \code{\link{summariseTracesAndTrees}}.
 
-Step 2: \code{pipSelectValidResults} selects 100 simulations
+Step 2: \code{pipSelectValidResults} selects 100 results
 (run 110 in total), where the ESS of every parameters are guaranteed >= 200.
-If not, then replace it to the one from the extra 10 sequentially,
-and check ESS.
+
+We start from the first 100, and check ESS. If any ESS is not enough,
+then replace the result to the one from the extra 10, and check ESS again.
+Repeat this, until all ESSs >= 200.
 
 If all extra 10 are used but there exists any low-ESS simulations,
-then the pipeline stops and inform to re-run all simulations with longer
-MCMC chain length.
+then the pipeline will stop and inform to re-run all simulations with longer
+MCMC chain length. If any extras are used, it will create "low-ESS.tsv"
+to record the replacements.
 
 It includes \code{\link{selectResultByESS}}.
 
-Step 3: \code{pipCreateParameterSummaries} summarise BEAST results for
-each of parameters.It includes \code{\link{summariseParameters}}.
+Step 3: \code{pipCreateParameterSummaries} combines and summarises
+the selected 100 results for each of BEAST parameters.
+It includes \code{\link{summariseParameters}}.
 
 Step 4: \code{pipCreateTrueValueSummaries} creates one final summary file
 containing true values for every parameters.
@@ -150,7 +157,7 @@ It includes \code{\link{summariseTrueValues}}.
 
 Step 5: \code{reportCoverages} marks how many true values are falling
 into or outside the 95% HPD interval of posteriors for each parameter,
-and return the overall coverages in a data frame.
+and return the overall coverage in a data frame.
 It includes \code{\link{markInOut}}.
 
 Note: the same parameter may be given different names between LPhy script
