@@ -13,9 +13,9 @@ Bayesian phylogenetic models. These results can be generated using
 
 You can either use the **devtools** *install\_github()* function to
 install the latest development version directly from the GitHub, or
-install a particular version from the released source
-`{r eval=FALSE} TraceR_*.tar.gz`. *remove.packages()* will make sure to
-clean the previous installed version.
+install a particular version from the released source `TraceR_*.tar.gz`.
+*remove.packages()* will make sure to clean the previous installed
+version.
 
 ``` r
 library("devtools")
