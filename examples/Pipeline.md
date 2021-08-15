@@ -1,13 +1,13 @@
 5-Step Pipeline to Summarise Coverage Tests
 ================
-Walter Xie[1]
+Walter Xie
 
 The coverage-test pipeline included in the R package
 [TraceR](https://github.com/walterxie/TraceR) provides some
 post-analysis methods and visualisations for the results of validating
 Bayesian phylogenetic models. These results can be generated using
-[LPhyBEAST](https://github.com/LinguaPhylo/LPhyBeast) and [BEAST
-2](https://www.beast2.org)
+[LPhyBEAST](https://github.com/LinguaPhylo/LPhyBeast) and
+[BEAST 2](https://www.beast2.org)
 
 ## Installation
 
@@ -27,20 +27,23 @@ devtools::install_github("walterxie/TraceR")
 
 The input files for this pipeline are:
 
--   BEAST logs (tree logs) containing samples from the posterior,
--   and LPhy logs (tree logs) containing true values.
+  - BEAST logs (tree logs) containing samples from the posterior,
+  - and LPhy logs (tree logs) containing true values.
 
 The example log files are available to download from
 [here](https://github.com/LinguaPhylo/linguaPhylo.github.io/tree/master/covgtest).
-You need to extract them into the same working directory. For example, I
-set my working directory to `~/WorkSpace/TraceR/examples/covgtest/` in
-the example.
+You need to extract them into the same working directory, for example,
+using the Linux command `ls *.gz |xargs -n1 tar -xzf`.
+
+In this example, I set my working directory to
+`~/WorkSpace/TraceR/examples/covgtest/`.
 
 Then, check if all logs are ready. The files whose names satisfy with
 pattern `_([0-9]+).log` are BEAST 2 logs, ones with `_([0-9]+)_true.log`
 are LPhy simulation logs containing true values, and ones with
 `_([0-9]+)_true.trees` are true trees from LPhy’s simulation. Do the
-same to check true values and trees.
+same to check true values and trees. But we do not need to procees any
+BEAST tree logs here.
 
 ``` r
 log.files = list.files(pattern = "_([0-9]+).log")
@@ -60,16 +63,23 @@ stopifnot(length(tru.tree.files)>100)
 
 As you can see, there are 110 simulations in total, where 10 extra
 simulations will be used for replacing any low ESS results. This keeps
-the number of selected valid results (ESS &gt;= 200) as 100.
+the number of selected valid results (ESS \>= 200) as 100.
 
 ## Step 1: summarising traces
 
 We summarise traces statistics for every BEAST logs. Here, we do not use
 BEAST tree logs, because we have logged the total tree branch lengths
-and root height in the BEAST logs.
+and root height in the BEAST
+    logs.
 
 ``` r
 library("tidyverse")
+```
+
+    ## Warning: replacing previous import 'vctrs::data_frame' by 'tibble::data_frame'
+    ## when loading 'dplyr'
+
+``` r
 library("TraceR")
 
 # Step 1
@@ -89,7 +99,8 @@ cat("Find", length(all.stats), "summaries, they are : ",
 
 The tsv file contains all BEAST parameters in columns, and statistics in
 rows. But the 1st column “trace” is added by the pipeline and reserved
-for the names of statistics.
+for the names of
+    statistics.
 
 ``` r
 all.beast.params
@@ -119,17 +130,17 @@ beast.params = c("mu","Theta", "r_0", "r_1", "r_2",
                  "psi.treeLength", "psi.height")
 ```
 
-The *psi.treeLength* is the total branch lengths and *psi.height* is the
-root height.
+The *psi.treeLength* represents the total branch length of each of
+sampled trees, and *psi.height* is the root height.
 
 ## Step 2: selecting valid results
 
 We need to select 100 results where the ESS of every parameters are  
-guaranteed &gt;= 200 in this step.
+guaranteed \>= 200 in this step.
 
 We start from the first 100, and check ESS. If any ESS is not enough,
 then replace the result to the one from the extra 10, and check ESS
-again. Repeat this, until all ESSs &gt;= 200.
+again. Repeat this, until all ESSs \>= 200.
 
 If all extra 10 are used but there still exists any low-ESS simulations,
 then the pipeline will stop and inform to re-run all simulations with
@@ -284,4 +295,8 @@ p + scale_x_log10(limits = c(1,1e4), breaks = scales::trans_breaks("log10", func
 
 ![](Pipeline_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
-[1] University of Auckland, Aotearoa
+## Citation
+
+Drummond AJ, Xie D, Mendes F (), LinguaPhylo: a probabilistic model
+specification language for reproducible phylogenetic analyses, in
+preparation.

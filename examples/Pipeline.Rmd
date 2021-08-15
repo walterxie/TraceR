@@ -32,9 +32,11 @@ The input files for this pipeline are:
 - and LPhy logs (tree logs) containing true values.
 
 The example log files are available to download from [here](https://github.com/LinguaPhylo/linguaPhylo.github.io/tree/master/covgtest). 
-You need to extract them into the same working directory.
-For example, I set my working directory to
-`~/WorkSpace/TraceR/examples/covgtest/` in the example.
+You need to extract them into the same working directory, for example,
+using the Linux command `ls *.gz |xargs -n1 tar -xzf`.
+
+In this example, I set my working directory to
+`~/WorkSpace/TraceR/examples/covgtest/`.
 
 ```{r, setup, include=FALSE}
 WD = file.path("~/WorkSpace/TraceR/examples/covgtest/")
@@ -47,6 +49,7 @@ The files whose names satisfy with pattern `_([0-9]+).log` are BEAST 2 logs,
 ones with `_([0-9]+)_true.log` are LPhy simulation logs containing true values,
 and ones with `_([0-9]+)_true.trees` are true trees from LPhy's simulation.
 Do the same to check true values and trees.
+But we do not need to procees any BEAST tree logs here.
 
 ```{r, message = FALSE}
 log.files = list.files(pattern = "_([0-9]+).log")
@@ -109,7 +112,8 @@ beast.params = c("mu","Theta", "r_0", "r_1", "r_2",
                  "psi.treeLength", "psi.height")
 ```
 
-The *psi.treeLength* is the total branch lengths and *psi.height* is the root height.
+The *psi.treeLength* represents the total branch length of each of sampled trees, 
+and *psi.height* is the root height.
 
 
 ## Step 2: selecting valid results
@@ -231,5 +235,11 @@ p + scale_x_log10(limits = c(1,1e4), breaks = scales::trans_breaks("log10", func
                   labels = scales::trans_format("log10", scales::math_format(10^.x)))
 ```
 
+
+## Citation
+
+Drummond AJ, Xie D, Mendes F  (),
+LinguaPhylo: a probabilistic model specification language for reproducible phylogenetic analyses,
+in preparation.
 
 

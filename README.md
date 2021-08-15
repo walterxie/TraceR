@@ -30,7 +30,7 @@ tre.sta.df <- readTrees("data/RSV2long.trees")
 tre.sta <- analyseTreeStats(tre.sta.df)
 ```
 
-3. The [pipeline](examples/Pipeline.R) to generate a coverage-test report 
+3. The [5-step pipeline](examples/Pipeline.md) to summarise the coverage tests 
 for validating Bayesian phylogenetic models.
 
 
