@@ -35,7 +35,9 @@ for validating Bayesian phylogenetic models.
 
 
 
-## Citation
+## Citations
+
+1. For Tracer, please cite:
 
 Rambaut A, Drummond AJ, Xie D, Baele G and Suchard MA (2018),  
 Posterior summarisation in Bayesian phylogenetics using Tracer 1.7, 
@@ -43,7 +45,7 @@ Systematic Biology. syy032.
 [doi:10.1093/sysbio/syy032](https://doi.org/10.1093/sysbio/syy032)
 
 
-For the coverage-test pipeline, please cite:
+2. For the coverage-test pipeline, please cite:
 
 Drummond AJ, Xie D, Mendes F  (),
 LinguaPhylo: a probabilistic model specification language for reproducible phylogenetic analyses,
