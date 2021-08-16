@@ -129,7 +129,7 @@ sampled trees, and *psi.height* is the root height.
 
 ## Step 2: selecting valid results
 
-We need to select 100 results where the ESS of every parameters are  
+We need to select 100 results where the ESSs of every parameters are
 guaranteed \>= 200 in this step.
 
 We start from the first 100, and check ESS. If any ESS is not enough,
@@ -258,7 +258,7 @@ covg[1:5,]
 ## Plots
 
 The files "\*-coverage.tsv" contains the coverage calculations for each
-parameter.
+parameter, which are generated in the step 5.
 
 ``` r
 covg.files = list.files(pattern = "-coverage.tsv")
