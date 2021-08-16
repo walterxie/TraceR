@@ -3,6 +3,7 @@
 \name{CovgGraph}
 \alias{CovgGraph}
 \alias{ggCoverage}
+\alias{ggDataSaturation}
 \title{Coverage Test Graph in R}
 \usage{
 ggCoverage(
@@ -16,6 +17,15 @@ ggCoverage(
   x.max.lim = NA,
   y.max.lim = NA,
   x.txt.just = 0
+)
+
+ggDataSaturation(
+  gene.dist,
+  x.col = "simulation",
+  y.col = "distance",
+  colour.col = "is.in",
+  x.lab = "",
+  y.lab = "max(root height * mu * r)"
 )
 }
 \arguments{
@@ -40,6 +50,10 @@ which can be used to adjust the x and y to the same scale.
 Default to NA.}
 
 \item{x.txt.just}{Where the text "covg. =" starts, default to 0.}
+
+\item{gene.dist}{The data frame contains simulation and distances.}
+
+\item{x.col, y.col, colour.col}{The column names.}
 }
 \description{
 The visualization functions to summarise the model validation result.
@@ -55,12 +69,18 @@ the coverage of a model validation,
 where the data frame has columns as statistics and rows as analyses.
 The data frame can be a subset of full analyses, therefore the plot
 will zoom into a better view to skip some outliers.
+
+The data saturation in the simluated data may cause MCMC defficult to converge.
+\code{ggDataSaturation} returns a \code{\link{ggplot}} object to visualise
+the maximum distances of overall partitions \code{max(root height * mu * r)}.
+It is also coloured by the coverages.
 }
 \examples{
 param = "mu"
 df.pos <- read_tsv(paste0(param, ".tsv"))
 df.tru <- read_tsv("trueValue.tsv")
 inOut <- markInOut(df.pos, df.tru, tru.val.par="μ")
+write_tsv(inOut, paste0(param, "-coverage.tsv"))
 # coverage
 cov <- nrow(subset(inOut, is.in==TRUE)) / nrow(inOut)
 p <- ggCoverage(inOut, x.lab=paste("True",param,"value"))
@@ -71,7 +91,39 @@ df.sub <- inOut \%>\% filter(mean < 0.045)
 nrow(df.sub)
 cov.per <- round(cov * 100)
 p <- ggCoverage(df.sub, cov.per, x.lab=paste("True",param,"value"))
-ggsave(paste0(param, "-sub-",nrow(df.sub),".pdf"), p, width = 4, height = 3)
 
+
+### create data frame for data saturation visualisation
+
+df.mu <- read_tsv("mu-coverage.tsv", col_types = cols()) \%>\%
+  select("simulation", "true.val") \%>\% rename(mu=true.val)
+df.r0 <- read_tsv("r_0-coverage.tsv", col_types = cols()) \%>\%
+  select("simulation", "true.val") \%>\% rename(r0=true.val)
+df.r1 <- read_tsv("r_1-coverage.tsv", col_types = cols()) \%>\%
+  select("simulation", "true.val") \%>\% rename(r1=true.val)
+df.r2 <- read_tsv("r_2-coverage.tsv", col_types = cols()) \%>\%
+  select("simulation", "true.val") \%>\% rename(r2=true.val)
+df.hei <- read_tsv("psi.height-coverage.tsv", col_types = cols()) \%>\%
+  select("simulation", "true.val") \%>\% rename(height=true.val)
+
+df.colour <- read_tsv("Theta-coverage.tsv", col_types = cols()) \%>\%
+  select("simulation", "is.in")
+
+gene.dist <- df.mu \%>\% inner_join(df.hei, by = "simulation") \%>\%
+  inner_join(df.r0, by = "simulation") \%>\%
+  inner_join(df.r1, by = "simulation") \%>\%
+  inner_join(df.r2, by = "simulation") \%>\%
+  mutate(max.r = pmax(r0, r1, r2)) \%>\%
+  mutate(distance = height*mu*max.r) \%>\%
+  select(-r0, -r1, -r2) \%>\%
+  inner_join(df.colour, by = "simulation")
+
+gene.dist
+#   simulation  mu     height max.r  distance is.in
+#   <chr>       <dbl>  <dbl>  <dbl>   <dbl>   <lgl>
+# 1 al2_0      0.0165   72.0  1.36    1.62    TRUE
+# 2 al2_1      0.00145  158.  1.99    0.458   TRUE
+
+p <- ggDataSaturation(gene.dist)
 }
-\keyword{Tracer}
+\keyword{Coverage}
