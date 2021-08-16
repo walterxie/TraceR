@@ -74,7 +74,7 @@ We summarise traces statistics for every BEAST logs.
 Here, we do not use BEAST tree logs, because we have logged 
 the total tree branch lengths and root height in the BEAST logs.
 
-```{r, message = FALSE, results = "hide"}
+```{r, message = FALSE, warning=FALSE, results = "hide"}
 library("tidyverse")
 library("TraceR")
 

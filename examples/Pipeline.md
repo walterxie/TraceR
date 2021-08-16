@@ -74,12 +74,6 @@ and root height in the BEAST
 
 ``` r
 library("tidyverse")
-```
-
-    ## Warning: replacing previous import 'vctrs::data_frame' by 'tibble::data_frame'
-    ## when loading 'dplyr'
-
-``` r
 library("TraceR")
 
 # Step 1
