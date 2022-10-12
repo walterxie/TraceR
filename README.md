@@ -19,7 +19,7 @@ In addition, coverage tests for a model validation are recently added.
    [BEAST 2](http://www.beast2.org) `*.state` log file.
 
 ```
-readState("data/star.beast.state"")
+readState("data/star.beast.state")
 ```
 
 2. Summarising tree statistics from the posterior trees logged by BEAST 2, 
