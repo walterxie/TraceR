@@ -1,15 +1,19 @@
+# plot the coverage graph for well-calibrated study
 # https://github.com/walterxie/TraceR
-
+# install libraires below
 library("TraceR")
 library(ape)
 require(phytools)
 require(tidyverse)
 
+# change to your path
 setwd("~/WorkSpace/linguaPhylo.github.io/tutorials/ORC")
 
+# paramter names logged in beast log
 params <- c("Theta", "uclnMean", "sigma", "psi.height", "psi.treeLength")
 
 res <- tibble()
+# 100 beast results
 for (i in 0:99) {
   cat("Start analysis ", i, " ...\n")
 
@@ -26,25 +30,29 @@ for (i in 0:99) {
     mutate_if(is.character, as.numeric)
   cat("min ESS = ", min(all.ess), " at ", colnames(all.ess)[which(all.ess==min(all.ess))], "\n")
 
+  # extract HPD intervals
   hpd.lo <- stats %>% select(!!params) %>% filter(row.names(stats) == "HPD95.lower")
   hpd.up <- stats %>% select(!!params) %>% filter(row.names(stats) == "HPD95.upper")
 
+  # beast posterior trees
   tres <- file.path(paste0("ORC-", i,"_with_rates.trees"))
   tres.b <- readTrees(tres, burn.in = 0.1)
   tre.sta <- analyseTreeStats(tres.b)
   tre.hpd <- tre.sta %>% filter(row.names(stats) == "HPD95.lower" |
                                   row.names(stats) == "HPD95.upper")
 
+  # compute tree stats HPD
   hpd.lo["phi.height"] <- tre.hpd[tre.hpd$trace == "HPD95.lower", "tree.height"]
   hpd.lo["phi.treeLength"] <- tre.hpd[tre.hpd$trace == "HPD95.lower", "total.br.len"]
   hpd.up["phi.height"] <- tre.hpd[tre.hpd$trace == "HPD95.upper", "tree.height"]
   hpd.up["phi.treeLength"] <- tre.hpd[tre.hpd$trace == "HPD95.upper", "total.br.len"]
 
+  # combine all posterior stats here
   df <- tibble(Parameter = names(hpd.lo), HPD95.lower = hpd.lo %>% unlist)
   df$HPD95.upper <- hpd.up %>% unlist
 
   # true value
-  tru.fil <- file.path("true", paste0("ORC-", i,".log"))
+  tru.fil <- file.path("true", paste0("ORC-", i,"_true.log"))
   tru.v <- read_delim(tru.fil, delim="\t", comment = "#")
   tru.v <- tru.v %>% select(!contains("siteRates") & !contains("Q_") & !Sample) %>% unlist
   # match names
@@ -53,13 +61,16 @@ for (i in 0:99) {
   #index <- as.numeric(gsub("frequencies_", "", feqs)) + 1
   #names(tru.v)[1:4] <- paste0("frequencies.", bases[index])
 
-  tru.tre.f <- file.path("true", paste0("ORC-", i,"_psi.trees"))
+  # true tree
+  tru.tre.f <- file.path("true", paste0("ORC-", i,"_psi_true.trees"))
   tru.tre <- read.nexus(tru.tre.f)
-
+  # true tree stats
   tru.v["psi.height"] <- max(nodeHeights(tru.tre))
   tru.v["psi.treeLength"] <- sum(tru.tre$edge.length)
 
+  # combine all truth here
   tru.df <- tibble(Parameter = names(tru.v), True.Value = tru.v)
+  # merge posterior dataframe with true
   df <- merge(df, tru.df)
   stopifnot(nrow(df) == length(params))
 
@@ -68,6 +79,7 @@ for (i in 0:99) {
     arrange(Parameter) %>%
     mutate(i = i)
 
+  # add ith processed result into the final dataframe
   res <- bind_rows(res, df_sorted)
 
 }
@@ -80,6 +92,7 @@ res <- res %>%  mutate(
 )
 res
 
+# coverage
 cov <- res %>%
   group_by(Parameter) %>%        # Group by Parameter
   summarize(Coverage = sum(is.in))
