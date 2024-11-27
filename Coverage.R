@@ -7,17 +7,22 @@ require(phytools)
 require(tidyverse)
 
 # change to your path
-setwd("~/WorkSpace/linguaPhylo.github.io/tutorials/ORC")
+setwd("~/WorkSpace/toroidalDiffusion/tmp")
 
+#Sample	posterior	likelihood	prior	drift.1	drift.2	driftCorr	mu.1	mu.2	sigma.1	sigma.2
+#lambda	psi2.height	psi2.treeLength	PhyloWrappedBivariateDiffusion	alpha3
+# Sample	drift_0	drift_1	driftCorr	mu_0	mu_1	sigma_0	sigma_1	lambda
+tree.prefix = "psi2"
 # paramter names logged in beast log
-params <- c("Theta", "uclnMean", "sigma", "psi.height", "psi.treeLength")
+params <- c("drift.1", "drift.2", "driftCorr", "mu.1", "mu.2", "sigma.1", "sigma.2",
+            "lambda", paste0(tree.prefix, ".height"), paste0(tree.prefix, ".treeLength"))
 
 res <- tibble()
 # 100 beast results
 for (i in 0:99) {
   cat("Start analysis ", i, " ...\n")
 
-  fil <- file.path(paste0("ORC-", i,".log"))
+  fil <- file.path("log_files", paste0("test-", i,".log"))
   stopifnot(file.exists(fil))
   # read MCMC log
   mcmc.log <- readMCMCLog(fil)
@@ -35,24 +40,24 @@ for (i in 0:99) {
   hpd.up <- stats %>% select(!!params) %>% filter(row.names(stats) == "HPD95.upper")
 
   # beast posterior trees
-  tres <- file.path(paste0("ORC-", i,"_with_rates.trees"))
+  tres <- file.path("trees", paste0("test-", i,".trees"))
   tres.b <- readTrees(tres, burn.in = 0.1)
   tre.sta <- analyseTreeStats(tres.b)
   tre.hpd <- tre.sta %>% filter(row.names(stats) == "HPD95.lower" |
                                   row.names(stats) == "HPD95.upper")
 
   # compute tree stats HPD
-  hpd.lo["phi.height"] <- tre.hpd[tre.hpd$trace == "HPD95.lower", "tree.height"]
-  hpd.lo["phi.treeLength"] <- tre.hpd[tre.hpd$trace == "HPD95.lower", "total.br.len"]
-  hpd.up["phi.height"] <- tre.hpd[tre.hpd$trace == "HPD95.upper", "tree.height"]
-  hpd.up["phi.treeLength"] <- tre.hpd[tre.hpd$trace == "HPD95.upper", "total.br.len"]
+  hpd.lo[paste0(tree.prefix, ".height")] <- tre.hpd[tre.hpd$trace == "HPD95.lower", "tree.height"]
+  hpd.lo[paste0(tree.prefix, ".treeLength")] <- tre.hpd[tre.hpd$trace == "HPD95.lower", "total.br.len"]
+  hpd.up[paste0(tree.prefix, ".height")] <- tre.hpd[tre.hpd$trace == "HPD95.upper", "tree.height"]
+  hpd.up[paste0(tree.prefix, ".treeLength")] <- tre.hpd[tre.hpd$trace == "HPD95.upper", "total.br.len"]
 
   # combine all posterior stats here
   df <- tibble(Parameter = names(hpd.lo), HPD95.lower = hpd.lo %>% unlist)
   df$HPD95.upper <- hpd.up %>% unlist
 
   # true value
-  tru.fil <- file.path("true", paste0("ORC-", i,"_true.log"))
+  tru.fil <- file.path("true_logs", paste0("test-", i,".log"))
   tru.v <- read_delim(tru.fil, delim="\t", comment = "#")
   tru.v <- tru.v %>% select(!contains("siteRates") & !contains("Q_") & !Sample) %>% unlist
   # match names
@@ -62,14 +67,22 @@ for (i in 0:99) {
   #names(tru.v)[1:4] <- paste0("frequencies.", bases[index])
 
   # true tree
-  tru.tre.f <- file.path("true", paste0("ORC-", i,"_psi_true.trees"))
+  tru.tre.f <- file.path("true_trees", paste0("test-", i,"_", tree.prefix, ".trees"))
   tru.tre <- read.nexus(tru.tre.f)
   # true tree stats
-  tru.v["psi.height"] <- max(nodeHeights(tru.tre))
-  tru.v["psi.treeLength"] <- sum(tru.tre$edge.length)
+  tru.v[paste0(tree.prefix, ".height")] <- max(nodeHeights(tru.tre))
+  tru.v[paste0(tree.prefix, ".treeLength")] <- sum(tru.tre$edge.length)
 
   # combine all truth here
   tru.df <- tibble(Parameter = names(tru.v), True.Value = tru.v)
+
+  # change names to the same
+  tru.df$Parameter <- sub("_", ".", tru.df$Parameter)
+  # have to sysnc lphy array index to beast
+  tru.df$Parameter <- sub("\\.1", "\\.2", tru.df$Parameter)
+  tru.df$Parameter <- sub("\\.0", "\\.1", tru.df$Parameter)
+
+
   # merge posterior dataframe with true
   df <- merge(df, tru.df)
   stopifnot(nrow(df) == length(params))
@@ -118,6 +131,6 @@ p <- ggplot(res, aes(x = True.Value, colour = is.in) ) +
   )
 p
 
-ggsave("../UCLN-well-calbr.pdf", p, width = 8, height = 6)
+ggsave("../DihedralAngle-well-calbr.pdf", p, width = 8, height = 6)
 
 
